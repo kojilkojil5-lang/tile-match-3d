@@ -62,10 +62,13 @@ header{display:flex;align-items:center;justify-content:space-between;gap:8px;pad
 .sw-sky{background:linear-gradient(140deg,#EAF4FD,#8FBADD)}
 .sw-meadow{background:linear-gradient(140deg,#F3FAE9,#A9D398)}
 .sw-moon{background:linear-gradient(140deg,#33507E,#0B1220)}
-#btnSound{
+#btnSound,#btnMusic{
   width:24px;height:19px;border:none;background:none;cursor:pointer;font-size:13px;
-  color:var(--dim);padding:0;line-height:1;margin-left:3px;
+  color:var(--dim);padding:0;line-height:1;
 }
+#btnSound{margin-left:3px}
+#btnMusic.off,#btnSound.off{opacity:.35}
+#btnMusic.missing{opacity:.2;cursor:not-allowed}
 .stats{display:flex;gap:6px}
 .stat{min-width:60px;padding:6px 8px;border-radius:10px;text-align:center;background:var(--chip);border:1px solid var(--line)}
 .stat b{display:block;font-family:'Gowun Batang',serif;font-size:17px;line-height:1.15}
@@ -249,7 +252,8 @@ header{display:flex;align-items:center;justify-content:space-between;gap:8px;pad
         <button class="swatch sw-sky" data-t="sky" title="새벽 하늘" aria-label="새벽 하늘 테마"></button>
         <button class="swatch sw-meadow" data-t="meadow" title="봄 들판" aria-label="봄 들판 테마"></button>
         <button class="swatch sw-moon" data-t="moon" title="달빛 밤" aria-label="달빛 밤 테마"></button>
-        <button id="btnSound" title="소리 켜기/끄기" aria-label="소리 켜기 끄기">🔊</button>
+        <button id="btnSound" title="효과음 켜기/끄기" aria-label="효과음 켜기 끄기">🔊</button>
+        <button id="btnMusic" title="배경음악 켜기/끄기" aria-label="배경음악 켜기 끄기">🎵</button>
         <button id="btnBoard" title="순위표" aria-label="순위표 보기">🏆</button>
       </div>
     </div>
@@ -407,6 +411,88 @@ function sMatch(n){
 }
 const sWin  =()=>[0,.1,.2,.32].forEach((d,i)=>tone([523,659,784,1046][i],.35,'sine',.12,d));
 const sLose =()=>[0,.14].forEach((d,i)=>tone([300,190][i],.4,'sawtooth',.08,d));
+
+/* ══════════════════════════════════════════════
+   배경음악 (BGM)
+   ────────────────────────────────────────────────
+   mp3 파일을 index.html 옆의 bgm/ 폴더에 넣으면 자동 재생됩니다.
+     bgm/calm.mp3   — 평상시 (마림바/칼림바 계열, 100~110 BPM 권장)
+     bgm/tense.mp3  — 막판/위기 (남은시간 45초 이하 또는 받침 6칸)
+   파일이 없으면 조용히 무시하고 게임은 그대로 돌아갑니다.
+   ══════════════════════════════════════════════ */
+const BGM={
+  src:{calm:'bgm/calm.mp3', tense:'bgm/tense.mp3'},
+  el:{}, ok:{}, cur:null, on:true, vol:.42, duckT:null, fadeT:{},
+  init:function(){
+    try{ this.on=localStorage.getItem('animaltile.bgm')!=='0'; }catch(e){}
+    let any=false;
+    for(const k in this.src){
+      const a=new Audio(this.src[k]);
+      a.loop=true; a.preload='auto'; a.volume=0;
+      a.addEventListener('canplaythrough',()=>{ this.ok[k]=true; this.paint(); },{once:true});
+      a.addEventListener('error',()=>{ this.ok[k]=false; this.paint(); });
+      this.el[k]=a; any=true;
+    }
+    this.paint();
+  },
+  available:function(){ return Object.keys(this.ok).some(k=>this.ok[k]); },
+  paint:function(){
+    const b=$('btnMusic'); if(!b) return;
+    b.classList.toggle('off',!this.on);
+    b.textContent=this.on?'🎵':'🎵';
+    b.classList.toggle('missing',!this.available()&&Object.keys(this.ok).length>0);
+    b.title=this.available()?(this.on?'배경음악 끄기':'배경음악 켜기'):'bgm/calm.mp3 파일이 없습니다';
+  },
+  fade:function(k,target,ms){
+    const a=this.el[k]; if(!a) return;
+    clearInterval(this.fadeT[k]);
+    const steps=Math.max(1,Math.round(ms/40)), from=a.volume, d=(target-from)/steps;
+    let i=0;
+    this.fadeT[k]=setInterval(()=>{
+      i++;
+      a.volume=Math.min(1,Math.max(0,from+d*i));
+      if(i>=steps){
+        clearInterval(this.fadeT[k]);
+        if(a.volume<=.001){ try{ a.pause(); a.currentTime=0; }catch(e){} }
+      }
+    },40);
+  },
+  play:function(k){
+    if(!this.on||!this.el[k]||this.ok[k]===false) return;
+    if(this.cur===k) return;
+    const prev=this.cur; this.cur=k;
+    const a=this.el[k];
+    try{ const p=a.play(); if(p&&p.catch) p.catch(()=>{}); }catch(e){}
+    this.fade(k,this.vol,900);
+    if(prev&&this.el[prev]) this.fade(prev,0,900);
+  },
+  stop:function(){
+    for(const k in this.el) this.fade(k,0,400);
+    this.cur=null;
+  },
+  /* 콤보가 터질 때 잠시 BGM을 눌러 효과음이 뚫고 나오게 한다 */
+  duck:function(ms){
+    if(!this.cur||!this.on) return;
+    const k=this.cur;
+    clearTimeout(this.duckT);
+    this.fade(k,this.vol*.25,120);
+    this.duckT=setTimeout(()=>{ if(this.cur===k) this.fade(k,this.vol,500); },ms||700);
+  },
+  toggle:function(){
+    this.on=!this.on;
+    try{ localStorage.setItem('animaltile.bgm',this.on?'1':'0'); }catch(e){}
+    if(!this.on) this.stop(); else { this.cur=null; syncBGM(); }
+    this.paint();
+  }
+};
+/* 게임 상태에 맞는 트랙 고르기 */
+function syncBGM(){
+  if(!playing){ return; }
+  const tense=(timeLeft<=45)||(tray.length>=TRAY_MAX-1);
+  BGM.play(tense?'tense':'calm');
+}
+BGM.init();
+$('btnMusic').onclick=()=>BGM.toggle();
 
 /* ══ 파티클 ══ */
 const fx=$('fx'),ctx=fx.getContext('2d');
@@ -687,6 +773,7 @@ function drawTray(popIndex){
     trayEl.appendChild(slot);
   }
   trayEl.classList.toggle('danger',tray.length>=TRAY_MAX-1);
+  syncBGM();
 }
 
 /* ══ 조작 ══ */
@@ -767,6 +854,7 @@ function check(){
       jolt();
       sMatch(combo);
       comboFX(combo,cx,cy-10);
+      if(combo>=2) BGM.duck(700+combo*120);
     }, 120);
 
     const gain=(100+level*10)*(combo>1?combo:1);
@@ -898,6 +986,7 @@ function startLevel(lv){
 function tick(){
   $('hudTime').textContent=Math.floor(timeLeft/60)+':'+String(timeLeft%60).padStart(2,'0');
   $('timeStat').classList.toggle('warn',timeLeft<=30);
+  syncBGM();
 }
 function saveBest(){
   if(level>best.level||(level===best.level&&score>best.score)){
@@ -921,6 +1010,7 @@ function win(){
 }
 function lose(reason){
   playing=false; clearInterval(timerId); saveBest(); sLose();
+  BGM.stop();
   $('comboWrap').classList.remove('on');
 
   if(qualifies(score)){
