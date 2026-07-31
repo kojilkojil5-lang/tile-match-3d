@@ -905,57 +905,63 @@ function updateItems(){
   $('btnPull').disabled=items.pull<=0||tray.length===0;
 }
 
-/* ══ 리더보드 ══ */
-const LB_MAX=10;
-function loadLB(){ try{ return JSON.parse(localStorage.getItem('animaltile.lb'))||[]; }catch(e){ return []; } }
-function saveLB(list){ try{ localStorage.setItem('animaltile.lb',JSON.stringify(list)); }catch(e){} }
-function qualifies(sc){
-  const lb=loadLB();
-  return sc>0 && (lb.length<LB_MAX || sc>lb[lb.length-1].score);
+/* ══ 리더보드 (서버 API) ══ */
+const API='https://oil-war-game.onrender.com/api/leaderboard';
+const LB_MAX=20;
+let lbCache=[];
+
+function escapeHTML(s){
+  return String(s).replace(/[&<>"']/g,function(c){
+    return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+  });
 }
-function addLB(name,sc,lv){
-  const lb=loadLB();
-  const entry={name:(name||'익명').slice(0,12),score:sc,level:lv,at:Date.now()};
-  lb.push(entry);
-  lb.sort((a,b)=>b.score-a.score||a.at-b.at);
-  const cut=lb.slice(0,LB_MAX);
-  saveLB(cut);
-  return cut.indexOf(entry);
+async function fetchLB(){
+  try{
+    const r=await fetch(API,{signal:AbortSignal.timeout(6000)});
+    if(!r.ok) throw new Error('서버 오류');
+    lbCache=await r.json();
+  }catch(e){ /* 오프라인이면 캐시 유지 */ }
+  return lbCache;
 }
-function lbHTML(highlightAt){
-  const lb=loadLB();
-  if(!lb.length) return '<div class="lbEmpty">아직 기록이 없습니다.<br>첫 판을 마치면 여기에 남습니다.</div>';
+async function postLB(name,sc,lv){
+  const r=await fetch(API,{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({name,score:sc,level:lv}),
+    signal:AbortSignal.timeout(8000)
+  });
+  if(!r.ok) throw new Error('등록 실패');
+  return await r.json(); // {entry, rank}
+}
+function lbHTML(highlightId){
+  if(!lbCache.length) return '<div class="lbEmpty">아직 기록이 없습니다.</div>';
   const medal=['🥇','🥈','🥉'];
-  return '<div class="lb">'+lb.map(function(e,i){
-    return '<div class="lbRow'+(i<3?' top'+(i+1):'')+(e.at===highlightAt?' me':'')+'">'+
+  return '<div class="lb">'+lbCache.map(function(e,i){
+    return '<div class="lbRow'+(i<3?' top'+(i+1):'')+(e.id===highlightId?' me':'')+'">'+
       '<span class="rk">'+(medal[i]||(i+1))+'</span>'+
       '<span class="nm">'+escapeHTML(e.name)+'</span>'+
       '<span class="sc">'+e.score.toLocaleString()+'</span>'+
       '<span class="lv">'+e.level+'단계</span></div>';
   }).join('')+'</div>';
 }
-function escapeHTML(s){
-  return String(s).replace(/[&<>"']/g,function(c){
-    return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
-  });
+function qualifies(sc){
+  return sc>0&&(lbCache.length<LB_MAX||sc>lbCache[lbCache.length-1].score);
 }
-function showBoard(){
-  const wasPlaying=playing;
-  playing=false;
-  card.innerHTML='<h2>순위표</h2><p>이 기기에 저장된 상위 '+LB_MAX+'개 기록입니다.</p>'+lbHTML(null);
+async function showBoard(){
+  const wasPlaying=playing; playing=false;
+  card.innerHTML='<h2>순위표 🏆</h2><p>불러오는 중...</p>';
+  overlay.classList.add('on');
+  await fetchLB();
+  card.innerHTML='<h2>순위표 🏆</h2><p>전 세계 상위 '+LB_MAX+'개 기록</p>'+lbHTML(null);
   const b=document.createElement('button');
   b.className='btn'; b.textContent='닫기';
   b.onclick=()=>{ overlay.classList.remove('on'); playing=wasPlaying; };
   card.appendChild(b);
-  if(loadLB().length){
-    const g=document.createElement('button');
-    g.className='btn ghost'; g.textContent='기록 전체 삭제';
-    g.onclick=()=>{ saveLB([]); showBoard(); };
-    card.appendChild(g);
-  }
-  overlay.classList.add('on');
+  setTimeout(()=>b.focus(),30);
 }
 $('btnBoard').onclick=showBoard;
+/* 시작 시 미리 캐시 로드 */
+fetchLB();
 
 /* ══ 라운드 전환 ══ */
 function roundTransition(lv){
@@ -1015,7 +1021,7 @@ function lose(reason){
 
   if(qualifies(score)){
     let lastName=''; try{ lastName=localStorage.getItem('animaltile.name')||''; }catch(e){}
-    card.innerHTML='<h2>신기록 등록</h2><p>'+reason+'.<br>'+level+'단계 · <b>'+score.toLocaleString()+'점</b><br>순위표에 오를 점수입니다.</p>';
+    card.innerHTML='<h2>신기록 등록</h2><p>'+reason+'.<br>'+level+'단계 · <b>'+score.toLocaleString()+'점</b><br>순위표에 오를 점수입니다!</p>';
     const row=document.createElement('div'); row.className='nameRow';
     const inp=document.createElement('input');
     inp.type='text'; inp.maxLength=12; inp.placeholder='이름 (최대 12자)'; inp.value=lastName;
@@ -1026,19 +1032,24 @@ function lose(reason){
     skip.className='btn ghost'; skip.textContent='등록 없이 다시 하기';
     skip.onclick=()=>{ overlay.classList.remove('on'); restart(); };
 
-    const submit=()=>{
+    const submit=async()=>{
+      sv.disabled=true; sv.textContent='등록 중...';
       const nm=inp.value.trim()||'익명';
       try{ localStorage.setItem('animaltile.name',nm); }catch(e){}
-      const at=Date.now();
-      addLB(nm,score,level);
-      const lb=loadLB();
-      const rank=lb.findIndex(e=>e.name===nm&&e.score===score)+1;
-      card.innerHTML='<h2>'+(rank<=3?'🏆 ':'')+rank+'위 등록 완료</h2><p>'+nm+' · '+score.toLocaleString()+'점</p>'+lbHTML(lb[rank-1]?lb[rank-1].at:null);
+      try{
+        const res=await postLB(nm,score,level);
+        await fetchLB();
+        card.innerHTML='<h2>'+(res.rank<=3?'🏆 ':'')+res.rank+'위 등록!</h2>'+
+          '<p>'+escapeHTML(nm)+' · '+score.toLocaleString()+'점</p>'+lbHTML(res.entry.id);
+        if(res.rank<=3){ confettiRain(70); sWin(); }
+      }catch(e){
+        card.innerHTML='<h2>등록 실패</h2><p>서버 연결 문제입니다.<br>점수: <b>'+score.toLocaleString()+'점</b></p>';
+      }
       const b=document.createElement('button');
       b.className='btn'; b.textContent='다시 하기';
       b.onclick=()=>{ overlay.classList.remove('on'); restart(); };
       card.appendChild(b);
-      if(rank<=3){ confettiRain(70); sWin(); }
+      setTimeout(()=>b.focus(),30);
     };
     sv.onclick=submit;
     inp.addEventListener('keydown',e=>{ if(e.key==='Enter') submit(); });
@@ -1048,8 +1059,7 @@ function lose(reason){
     return;
   }
 
-  const lb=loadLB();
-  const gap=lb.length>=LB_MAX?('<br>'+LB_MAX+'위 기록까지 '+(lb[LB_MAX-1].score-score).toLocaleString()+'점 부족'):'';
+  const gap=lbCache.length>=LB_MAX?('<br>'+LB_MAX+'위까지 '+(lbCache[LB_MAX-1].score-score).toLocaleString()+'점 부족'):'';
   show('게임 종료',reason+'.<br>'+level+'단계 · <b>'+score.toLocaleString()+'점</b>'+gap,
     '다시 하기',restart,false);
 }
@@ -1082,7 +1092,7 @@ $('btnPull').onclick=usePull;
 
 show('동물 타일매치',
   '위에 덮인 타일은 고를 수 없습니다.<br>같은 동물 <b>3마리</b>를 모으면 타일이 부서집니다.<br>연속으로 맞추면 <b>콤보 배수</b>가 붙습니다.<br>받침 <b>7칸</b>이 다 차면 종료됩니다.'+
-  (loadLB().length?'<br><br>1위 '+escapeHTML(loadLB()[0].name)+' · '+loadLB()[0].score.toLocaleString()+'점':''),
+  (lbCache.length?'<br><br>🏆 1위 '+escapeHTML(lbCache[0].name)+' · '+lbCache[0].score.toLocaleString()+'점':''),
   '시작하기',()=>startLevel(1),true);
 })();
 </script>
