@@ -267,6 +267,68 @@ header{display:flex;align-items:center;justify-content:space-between;gap:8px;pad
 .nextInfo span{font-size:10px;color:var(--dim);letter-spacing:.08em}
 .rewardRow{display:flex;justify-content:center;gap:14px;margin:0 0 14px;font-size:12.5px;color:var(--dim)}
 .rewardRow em{font-style:normal;color:var(--good);font-weight:700}
+
+/* ══ 보너스 스테이지: 골든 타일 러시 ══ */
+body.bonus{
+  background:radial-gradient(120% 80% at 50% 0%, #FFF6DC 0%, #FFD98A 45%, #E8A93C 100%) fixed;
+}
+body.bonus .tile{
+  background:linear-gradient(168deg,#FFFBEB 0%,#FFE9A8 55%,#F5CE6A 100%);
+  box-shadow:0 4px 0 #C98F2E, 0 5px 12px #00000047, inset 0 1px 0 #fff;
+  border-color:#8A63203d;
+  animation:goldPulse 1.6s ease-in-out infinite alternate;
+}
+@keyframes goldPulse{
+  from{box-shadow:0 4px 0 #C98F2E,0 5px 12px #00000047,inset 0 1px 0 #fff}
+  to{box-shadow:0 4px 0 #C98F2E,0 5px 12px #00000047,inset 0 1px 0 #fff,0 0 16px 2px #FFD166aa}
+}
+body.bonus #tray{background:#FFFDF4E6;border-color:#D8A93Caa}
+body.bonus .slot .face{background:linear-gradient(168deg,#FFFBEB,#F5CE6A);box-shadow:0 2px 0 #C98F2E}
+body.bonus .stat,body.bonus .tool{background:#FFFFFFB3;border-color:#C98F2E55}
+/* 보너스 전용 HUD */
+#bonusBar{
+  display:none;margin:0 2px 6px;padding:8px 11px;border-radius:12px;
+  background:linear-gradient(90deg,#FFE9A8,#FFD166);
+  border:1px solid #C98F2E66;color:#5A3E12;
+  align-items:center;justify-content:space-between;font-size:12.5px;
+}
+#bonusBar.on{display:flex;animation:bbIn .3s ease-out}
+@keyframes bbIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
+#bonusBar b{font-family:'Gowun Batang',serif;font-size:15px}
+#bonusBar .cleared{font-family:'Gowun Batang',serif;font-size:17px;font-weight:700}
+/* 보너스 진입 연출 */
+.goldSplash{
+  position:absolute;left:50%;top:44%;text-align:center;
+  font-family:'Gowun Batang',serif;opacity:0;
+  animation:goldIn 2.1s ease-out forwards;
+}
+.goldSplash .k{
+  font-size:14px;letter-spacing:.46em;color:#8A6320;margin-bottom:8px;
+}
+.goldSplash .n{
+  font-size:44px;font-weight:700;line-height:1.1;color:#7A4E12;
+  text-shadow:0 3px 0 #FFFFFF88,0 0 30px #FFD166;
+}
+.goldSplash .s{font-size:12.5px;letter-spacing:.14em;color:#8A6320;margin-top:10px;line-height:1.7}
+@keyframes goldIn{
+  0%,14%{opacity:0;transform:translate(-50%,-50%) scale(.6) rotate(-6deg)}
+  30%{opacity:1;transform:translate(-50%,-50%) scale(1.1) rotate(2deg)}
+  40%,66%{opacity:1;transform:translate(-50%,-50%) scale(1) rotate(0)}
+  100%{opacity:0;transform:translate(-50%,-50%) scale(1.05)}
+}
+.goldCurtain{
+  position:absolute;left:0;width:100%;height:52%;
+  background:linear-gradient(180deg,#F0BB55,#E8A93C);box-shadow:0 0 40px #0005;
+}
+.goldCurtain.t{top:0;animation:curtT 2.1s cubic-bezier(.5,0,.3,1) forwards}
+.goldCurtain.b{bottom:0;animation:curtB 2.1s cubic-bezier(.5,0,.3,1) forwards}
+/* 보너스 결과 강조 */
+.bonusTotal{
+  padding:14px;border-radius:12px;margin:0 0 14px;text-align:center;
+  background:linear-gradient(135deg,#FFE9A8,#FFD166);border:1px solid #C98F2E66;
+}
+.bonusTotal b{display:block;font-family:'Gowun Batang',serif;font-size:30px;color:#7A4E12;line-height:1.1}
+.bonusTotal span{font-size:11px;letter-spacing:.18em;color:#8A6320}
 .nameRow{display:flex;gap:7px;margin-bottom:14px}
 .nameRow input{
   flex:1;padding:11px 12px;border-radius:11px;border:1px solid var(--line);
@@ -332,6 +394,12 @@ header{display:flex;align-items:center;justify-content:space-between;gap:8px;pad
       <div class="stat" id="timeStat"><b id="hudTime">5:00</b><span>남은시간</span></div>
     </div>
   </header>
+
+  <div id="bonusBar">
+    <span>🌟 <b>골든 러시</b></span>
+    <span>없앤 조합 <span class="cleared" id="bonusCleared">0</span></span>
+    <span>배수 <b id="bonusMult">x3</b></span>
+  </div>
 
   <div id="comboWrap">
     <div class="comboTop">
@@ -927,8 +995,8 @@ function check(){
       if(combo>=2) BGM.duck(700+combo*120);
     }, 120);
 
-    const gain=(100+level*10)*(combo>1?combo:1);
-    pointsPop(cx,cy-40,'+'+gain,combo>1?'COMBO x'+combo:'');
+    const gain=Math.round((100+level*10)*(combo>1?combo:1)*(isBonus?BONUS_MULT:1));
+    pointsPop(cx,cy-40,'+'+gain,isBonus?'GOLD x'+BONUS_MULT:(combo>1?'COMBO x'+combo:''));
 
     /* 4단계: 상태 업데이트 (파편이 튀는 동안 처리) */
     setTimeout(()=>{
@@ -936,12 +1004,18 @@ function check(){
       history=[];
       score+=gain; $('hudScore').textContent=score;
       $('scoreStat').classList.remove('bump'); void $('scoreStat').offsetWidth; $('scoreStat').classList.add('bump');
+      if(isBonus){ bonusCleared++; bonusEarned+=gain; updateBonusHUD(); }
       drawTray(-1); updateItems(); clearing=false;
-      if(tiles.every(t=>t.where==='gone')) win(); else check();
+      if(tiles.every(t=>t.where==='gone')){
+        if(isBonus) bonusEnd('모두 정리'); else win();
+      } else check();
     },340);
     return;
   }
-  if(tray.length>=TRAY_MAX) lose('받침이 가득 찼습니다');
+  if(tray.length>=TRAY_MAX){
+    if(isBonus) bonusEnd('받침이 가득 찼습니다');
+    else lose('받침이 가득 찼습니다');
+  }
 }
 
 /* ══ 아이템 ══ */
@@ -973,6 +1047,58 @@ function updateItems(){
   $('btnUndo').disabled=items.undo<=0||!history.length;
   $('btnShuffle').disabled=items.shuffle<=0;
   $('btnPull').disabled=items.pull<=0||tray.length===0;
+}
+
+/* ══ 보너스 스테이지: 골든 타일 러시 ══
+   5스테이지마다 등장. 층 없이 평면으로만 깔려서 모든 타일을 바로 집을 수 있다.
+   45초 안에 최대한 많이 없애는 점수 벌이 판. 실패 개념이 없다(받침이 차면 종료되고 정산). */
+const BONUS_EVERY=5, BONUS_TIME=45, BONUS_MULT=3;
+let isBonus=false, bonusCleared=0, bonusEarned=0;
+function isBonusLevel(lv){ return lv%BONUS_EVERY===0; }
+
+/* 평면 격자로 촘촘히 채운다 — 층이 없으니 전부 free */
+function buildBonusPositions(){
+  const pos=[];
+  for(let r=0;r<=ROWS;r+=2){
+    for(let c=0;c<=COLS-1;c+=2){
+      pos.push({x:c*HX,y:r*HY,layer:0});
+    }
+  }
+  while(pos.length%3!==0) pos.pop();
+  return pos;
+}
+/* 보너스는 종류를 적게 써서 매칭이 잘 터지게 한다 */
+function assignBonusSymbols(pos){
+  const kinds=5;
+  const trio=[];
+  for(let i=0;i<pos.length/3;i++) trio.push(ANIMALS[i%kinds]);
+  for(let i=trio.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); const t=trio[i]; trio[i]=trio[j]; trio[j]=t; }
+  const slots=pos.slice();
+  for(let i=slots.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); const t=slots[i]; slots[i]=slots[j]; slots[j]=t; }
+  slots.forEach((p,i)=>{ p.sym=trio[Math.floor(i/3)]; });
+  return pos;
+}
+/* 황금 커튼 + 안내 문구 */
+function bonusIntro(done){
+  if(REDUCED){ done&&done(); return; }
+  const fxEl=$('stageFX');
+  fxEl.innerHTML=
+    '<div class="goldCurtain t"></div><div class="goldCurtain b"></div>'+
+    '<div class="goldSplash"><div class="k">BONUS STAGE</div>'+
+    '<div class="n">골든 러시</div>'+
+    '<div class="s">층이 없습니다 · 전부 집을 수 있습니다<br>'+BONUS_TIME+'초 동안 점수 '+BONUS_MULT+'배</div></div>';
+  fxEl.classList.add('on');
+  setTimeout(()=>{ done&&done(); },600);
+  setTimeout(()=>{ fxEl.classList.remove('on'); fxEl.innerHTML=''; },2150);
+}
+function sBonus(){
+  [0,.08,.16,.24,.36].forEach((d,i)=>tone([523,659,784,1046,1319][i],.4,'triangle',.10,d));
+  thump(120,.35,.16,.36);
+  noise(.4,.05,5200,.36);
+}
+function updateBonusHUD(){
+  $('bonusCleared').textContent=bonusCleared;
+  $('bonusMult').textContent='x'+BONUS_MULT;
 }
 
 /* ══ 스테이지 정보 ══ */
@@ -1126,21 +1252,39 @@ function roundTransition(lv){
 /* ══ 진행 ══ */
 function startLevel(lv,skipTransition){
   level=lv;
-  if(!skipTransition) roundTransition(lv);
-  else applyRoundColors(lv);
-  $('stageName').textContent=stageName(lv);
-  const pos=assignSymbols(buildPositions(lv),lv);
-  tiles=pos.map((p,i)=>({id:i,x:p.x,y:p.y,layer:p.layer,sym:p.sym,where:'board',el:null,face:null}));
-  tray=[]; history=[]; clearing=false; playing=true; timeLeft=LEVEL_TIME; combo=0; lastMatchAt=0;
+  isBonus=isBonusLevel(lv);
+  document.body.classList.toggle('bonus',isBonus);
+  $('bonusBar').classList.toggle('on',isBonus);
+
+  if(isBonus){
+    bonusCleared=0; bonusEarned=0; updateBonusHUD();
+    $('stageName').textContent='BONUS · 골든 러시';
+    const pos=assignBonusSymbols(buildBonusPositions());
+    tiles=pos.map((p,i)=>({id:i,x:p.x,y:p.y,layer:0,sym:p.sym,where:'board',el:null,face:null}));
+    timeLeft=BONUS_TIME;
+  }else{
+    if(!skipTransition) roundTransition(lv);
+    else applyRoundColors(lv);
+    $('stageName').textContent=stageName(lv);
+    const pos=assignSymbols(buildPositions(lv),lv);
+    tiles=pos.map((p,i)=>({id:i,x:p.x,y:p.y,layer:p.layer,sym:p.sym,where:'board',el:null,face:null}));
+    timeLeft=LEVEL_TIME;
+  }
+
+  tray=[]; history=[]; clearing=false; playing=true; combo=0; lastMatchAt=0;
   $('comboWrap').classList.remove('on');
-  $('hudLevel').textContent=lv; $('hudScore').textContent=score;
+  $('hudLevel').textContent=isBonus?'★':lv;
+  $('hudScore').textContent=score;
   drawBoard(); drawTray(-1); updateItems(); tick();
   clearInterval(timerId);
   timerId=setInterval(()=>{
     if(!playing) return;
     timeLeft--; tick();
     if(timeLeft===10||timeLeft===5||timeLeft===3) tone(880,.1,'square',.06);
-    if(timeLeft<=0) lose('시간이 끝났습니다');
+    if(timeLeft<=0){
+      if(isBonus) bonusEnd('시간 종료');
+      else lose('시간이 끝났습니다');
+    }
   },1000);
 }
 function tick(){
@@ -1162,6 +1306,50 @@ function fireworks(){
     if(++n>5) clearInterval(iv);
   },180);
 }
+/* 보너스 종료 — 실패 개념 없이 정산만 하고 다음 단계로 */
+function bonusEnd(reason){
+  playing=false; clearInterval(timerId);
+  BGM.duck(2200);
+  $('comboWrap').classList.remove('on');
+  saveBest();
+
+  const allClear=tiles.every(t=>t.where==='gone');
+  const clearBonus=allClear?1000+level*100:0;
+  score+=clearBonus;
+  saveBest();
+
+  if(allClear){ sWin(); fireworks(); } else { sStage(); }
+  confettiRain(60);
+
+  setTimeout(()=>{
+    const nextLv=level+1;
+    card.innerHTML=
+      '<h2>'+(allClear?'🌟 완전 정리!':'골든 러시 종료')+'</h2>'+
+      '<p>'+reason+'</p>'+
+      '<div class="bonusTotal"><b>+'+(bonusEarned+clearBonus).toLocaleString()+'</b><span>보너스 획득 점수</span></div>'+
+      '<div class="tally">'+
+        '<div class="tallyRow"><span class="lab">없앤 조합</span><span class="val">'+bonusCleared+'</span></div>'+
+        '<div class="tallyRow"><span class="lab">러시 점수 (x'+BONUS_MULT+')</span><span class="val">+'+bonusEarned.toLocaleString()+'</span></div>'+
+        (allClear?'<div class="tallyRow"><span class="lab">전부 정리</span><span class="val">+'+clearBonus.toLocaleString()+'</span></div>':'')+
+        '<div class="tallyRow total"><span class="lab">총점</span><span class="val">'+score.toLocaleString()+'</span></div>'+
+      '</div>'+
+      '<div class="rewardRow">되돌리기 <em>+1</em><span>·</span>섞기 <em>+1</em><span>·</span>꺼내기 <em>+1</em></div>';
+    const b=document.createElement('button');
+    b.className='btn'; b.textContent=stageName(nextLv)+' 으로';
+    b.onclick=()=>{
+      overlay.classList.remove('on');
+      items.undo++; items.shuffle++; items.pull++;
+      document.body.classList.remove('bonus');
+      $('bonusBar').classList.remove('on');
+      sStage();
+      stageIntro(nextLv,()=>startLevel(nextLv,true));
+    };
+    card.appendChild(b);
+    overlay.classList.add('on');
+    setTimeout(()=>b.focus(),30);
+  },1200);
+}
+
 function win(){
   playing=false; clearInterval(timerId);
   BGM.duck(2200);
@@ -1179,7 +1367,9 @@ function win(){
 
   /* 2) 1.3초 뒤 결과 집계 카드 */
   setTimeout(()=>{
-    const nx=stageTier(level+1);
+    const nextLv=level+1;
+    const nextIsBonus=isBonusLevel(nextLv);
+    const nx=stageTier(nextLv);
     const rewards=perfect?'<div class="rewardRow">되돌리기 <em>+2</em><span>·</span>섞기 <em>+2</em><span>·</span>꺼내기 <em>+1</em></div>'
                         :'<div class="rewardRow">되돌리기 <em>+1</em><span>·</span>섞기 <em>+1</em></div>';
     card.innerHTML=
@@ -1192,21 +1382,26 @@ function win(){
         '<div class="tallyRow total"><span class="lab">총점</span><span class="val">'+score.toLocaleString()+'</span></div>'+
       '</div>'+
       rewards+
-      '<div class="nextInfo">'+
-        '<div><b>'+(level+1)+'</b><span>다음 단계</span></div>'+
-        '<div><b>'+nx.layers+'</b><span>층</span></div>'+
-        '<div><b>'+nx.kinds+'</b><span>종류</span></div>'+
-      '</div>';
+      (nextIsBonus
+        ? '<div class="bonusTotal"><b>🌟 BONUS</b><span>다음은 골든 러시 · 점수 '+BONUS_MULT+'배</span></div>'
+        : '<div class="nextInfo">'+
+            '<div><b>'+nextLv+'</b><span>다음 단계</span></div>'+
+            '<div><b>'+nx.layers+'</b><span>층</span></div>'+
+            '<div><b>'+nx.kinds+'</b><span>종류</span></div>'+
+          '</div>');
     const b=document.createElement('button');
-    b.className='btn'; b.textContent=stageName(level+1)+' 으로';
+    b.className='btn'; b.textContent=nextIsBonus?'골든 러시 시작':(stageName(nextLv)+' 으로');
     b.onclick=()=>{
       overlay.classList.remove('on');
-      /* 3) 커튼 연출 후 다음 단계 시작 */
-      const nextLv=level+1;
       if(perfect){ items.undo+=2; items.shuffle+=2; items.pull+=1; }
       else { items.undo++; items.shuffle++; }
-      sStage();
-      stageIntro(nextLv,()=>startLevel(nextLv,true));
+      if(nextIsBonus){
+        sBonus();
+        bonusIntro(()=>startLevel(nextLv,true));
+      }else{
+        sStage();
+        stageIntro(nextLv,()=>startLevel(nextLv,true));
+      }
     };
     card.appendChild(b);
     overlay.classList.add('on');
@@ -1262,7 +1457,14 @@ function lose(reason){
   show('게임 종료',reason+'.<br>'+level+'단계 · <b>'+score.toLocaleString()+'점</b>'+gap,
     '다시 하기',restart,false);
 }
-function restart(){ score=0; combo=0; lastMatchAt=0; items={undo:3,shuffle:3,pull:1}; startLevel(1); }
+function restart(){
+  score=0; combo=0; lastMatchAt=0;
+  isBonus=false; bonusCleared=0; bonusEarned=0;
+  document.body.classList.remove('bonus');
+  $('bonusBar').classList.remove('on');
+  items={undo:3,shuffle:3,pull:1};
+  startLevel(1);
+}
 function show(title,body,btnText,onClick,withPicker){
   card.innerHTML='<h2>'+title+'</h2><p>'+body+'</p>';
   if(withPicker){
