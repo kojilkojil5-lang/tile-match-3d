@@ -198,6 +198,75 @@ header{display:flex;align-items:center;justify-content:space-between;gap:8px;pad
 .lbRow .sc{font-family:'Gowun Batang',serif;font-weight:700}
 .lbRow .lv{font-size:10px;color:var(--dim);margin-left:4px}
 .lbEmpty{font-size:12.5px;color:var(--dim);padding:18px 0;text-align:center}
+.lbNote{font-size:11px;color:var(--dim);margin:0 0 8px;text-align:center}
+.loadNote .tiny{font-size:11px;opacity:.7}
+
+/* ══ 스테이지 클리어 연출 ══ */
+#stageFX{position:fixed;inset:0;z-index:85;pointer-events:none;display:none;overflow:hidden}
+#stageFX.on{display:block}
+.sweep{
+  position:absolute;top:0;left:-40%;width:40%;height:100%;
+  background:linear-gradient(105deg,transparent,var(--spark4),var(--spark1),transparent);
+  opacity:.5;filter:blur(2px);animation:sweepGo .85s cubic-bezier(.4,0,.2,1) forwards;
+}
+@keyframes sweepGo{to{left:120%}}
+.curtain{
+  position:absolute;left:0;width:100%;height:52%;
+  background:linear-gradient(180deg,var(--bg3),var(--bg2));box-shadow:0 0 40px #0006;
+}
+.curtain.t{top:0;animation:curtT 1.9s cubic-bezier(.5,0,.3,1) forwards}
+.curtain.b{bottom:0;animation:curtB 1.9s cubic-bezier(.5,0,.3,1) forwards}
+@keyframes curtT{0%{transform:translateY(-100%)}28%,64%{transform:translateY(0)}100%{transform:translateY(-100%)}}
+@keyframes curtB{0%{transform:translateY(100%)}28%,64%{transform:translateY(0)}100%{transform:translateY(100%)}}
+.stageWord{
+  position:absolute;left:50%;top:50%;text-align:center;
+  font-family:'Gowun Batang',serif;opacity:0;animation:wordIn 1.9s ease-out forwards;
+}
+.stageWord .k{font-size:15px;letter-spacing:.5em;color:var(--spark1);margin-bottom:6px;text-shadow:0 0 16px var(--spark1)}
+.stageWord .n{font-size:64px;font-weight:700;line-height:1;color:var(--text);text-shadow:0 4px 0 #00000033,0 0 34px var(--spark1)}
+.stageWord .s{font-size:13px;letter-spacing:.24em;color:var(--dim);margin-top:8px}
+@keyframes wordIn{
+  0%,20%{opacity:0;transform:translate(-50%,-50%) scale(.72)}
+  36%{opacity:1;transform:translate(-50%,-50%) scale(1.06)}
+  46%,62%{opacity:1;transform:translate(-50%,-50%) scale(1)}
+  76%,100%{opacity:0;transform:translate(-50%,-50%) scale(1.04)}
+}
+.stampWrap{position:absolute;left:50%;top:38%;animation:stampIn 1.3s cubic-bezier(.2,1.6,.4,1) forwards}
+.stamp{
+  font-family:'Gowun Batang',serif;font-size:38px;font-weight:700;
+  color:var(--danger);border:5px solid var(--danger);border-radius:14px;
+  padding:10px 24px;transform:rotate(-14deg);opacity:.94;box-shadow:0 0 0 3px #ffffff44 inset;
+}
+@keyframes stampIn{
+  0%{opacity:0;transform:translate(-50%,-50%) scale(3.4) rotate(6deg)}
+  22%{opacity:1;transform:translate(-50%,-50%) scale(1) rotate(0)}
+  30%{transform:translate(-50%,-50%) scale(1.08)}
+  40%,78%{transform:translate(-50%,-50%) scale(1)}
+  100%{opacity:0;transform:translate(-50%,-50%) scale(1.06)}
+}
+/* 결과 집계 */
+.tally{margin:0 0 14px}
+.tallyRow{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:9px 11px;border-radius:10px;background:var(--chip);
+  margin-bottom:6px;font-size:13.5px;opacity:0;animation:tallyIn .4s ease-out forwards;
+}
+.tallyRow:nth-child(1){animation-delay:.05s}
+.tallyRow:nth-child(2){animation-delay:.3s}
+.tallyRow:nth-child(3){animation-delay:.55s}
+.tallyRow:nth-child(4){animation-delay:.8s}
+.tallyRow.total{background:transparent;border-top:1px dashed var(--line);border-radius:0;margin-top:8px;padding-top:12px}
+.tallyRow .lab{color:var(--dim)}
+.tallyRow .val{font-family:'Gowun Batang',serif;font-weight:700;font-size:16px}
+.tallyRow.total .val{font-size:22px;color:var(--spark2)}
+@keyframes tallyIn{from{opacity:0;transform:translateX(-14px)}to{opacity:1;transform:translateX(0)}}
+/* 다음 단계 미리보기 */
+.nextInfo{display:flex;gap:8px;margin:0 0 14px}
+.nextInfo div{flex:1;padding:9px 6px;border-radius:10px;background:var(--chip);border:1px solid var(--line);text-align:center}
+.nextInfo b{display:block;font-family:'Gowun Batang',serif;font-size:17px;margin-bottom:2px}
+.nextInfo span{font-size:10px;color:var(--dim);letter-spacing:.08em}
+.rewardRow{display:flex;justify-content:center;gap:14px;margin:0 0 14px;font-size:12.5px;color:var(--dim)}
+.rewardRow em{font-style:normal;color:var(--good);font-weight:700}
 .nameRow{display:flex;gap:7px;margin-bottom:14px}
 .nameRow input{
   flex:1;padding:11px 12px;border-radius:11px;border:1px solid var(--line);
@@ -247,7 +316,7 @@ header{display:flex;align-items:center;justify-content:space-between;gap:8px;pad
 <div class="app" id="app">
   <header>
     <div>
-      <div class="brand">동물 타일매치<small>TILE MATCH 3D</small></div>
+      <div class="brand">동물 타일매치<small id="stageName">TILE MATCH 3D</small></div>
       <div class="row" id="themes">
         <button class="swatch sw-sky" data-t="sky" title="새벽 하늘" aria-label="새벽 하늘 테마"></button>
         <button class="swatch sw-meadow" data-t="meadow" title="봄 들판" aria-label="봄 들판 테마"></button>
@@ -282,6 +351,7 @@ header{display:flex;align-items:center;justify-content:space-between;gap:8px;pad
   </div>
 </div>
 
+<div id="stageFX"></div>
 <div id="banner"><div class="big"></div><div class="sub"></div></div>
 <div id="flash"></div>
 <div id="overlay"><div class="card" id="card"></div></div>
@@ -905,38 +975,111 @@ function updateItems(){
   $('btnPull').disabled=items.pull<=0||tray.length===0;
 }
 
+/* ══ 스테이지 정보 ══ */
+const STAGE_NAMES=['새벽 들녘','안개 숲','달맞이 언덕','바람의 계곡','별빛 호수','구름 위 정원','서리 골짜기','노을 절벽','오로라 평원','꿈의 성'];
+function stageName(lv){ return STAGE_NAMES[(lv-1)%STAGE_NAMES.length]; }
+function stageTier(lv){
+  const layers=Math.min(5,2+Math.ceil(lv/2));
+  const kinds=Math.min(ANIMALS.length,6+lv);
+  return {layers:layers,kinds:kinds,tiles:(12+(lv-1)*3)*3};
+}
+
+/* 클리어 도장 + 빛 쓸기 */
+function stampClear(){
+  if(REDUCED) return;
+  const fxEl=$('stageFX');
+  fxEl.innerHTML='<div class="sweep"></div><div class="stampWrap"><div class="stamp">CLEAR</div></div>';
+  fxEl.classList.add('on');
+  setTimeout(()=>{ fxEl.classList.remove('on'); fxEl.innerHTML=''; },1350);
+}
+/* 커튼이 닫히며 다음 스테이지 이름을 보여주고 다시 열린다 */
+function stageIntro(lv,done){
+  if(REDUCED){ done&&done(); return; }
+  const fxEl=$('stageFX');
+  fxEl.innerHTML=
+    '<div class="curtain t"></div><div class="curtain b"></div>'+
+    '<div class="stageWord"><div class="k">STAGE</div><div class="n">'+lv+'</div>'+
+    '<div class="s">'+stageName(lv)+'</div></div>';
+  fxEl.classList.add('on');
+  /* 커튼이 완전히 닫힌 순간(0.55초)에 배경색을 바꿔 전환이 안 보이게 */
+  setTimeout(()=>{ applyRoundColors(lv); done&&done(); },560);
+  setTimeout(()=>{ fxEl.classList.remove('on'); fxEl.innerHTML=''; },1950);
+}
+/* 스테이지 시작 소리 */
+function sStage(){
+  [0,.09,.18,.30].forEach((d,i)=>tone([392,523,659,784][i],.42,'triangle',.10,d));
+  thump(110,.3,.14,.30);
+}
+
 /* ══ 리더보드 (서버 API) ══ */
 const API='https://oil-war-game.onrender.com/api/leaderboard';
 const LB_MAX=20;
-let lbCache=[];
+let lbCache=[], lbState='idle'; /* idle | loading | ok | offline */
+
+/* Render 무료 플랜은 15분 미사용 시 잠들고, 깨어나는 데 최대 60초가 걸린다.
+   따라서 타임아웃을 넉넉히 주고, 실패하면 한 번 더 시도한다.
+   그동안 마지막으로 받아온 순위를 localStorage에 캐시해 화면이 비지 않게 한다. */
+try{ lbCache=JSON.parse(localStorage.getItem('animaltile.lbcache'))||[]; }catch(e){}
+
+function cacheLB(){ try{ localStorage.setItem('animaltile.lbcache',JSON.stringify(lbCache)); }catch(e){} }
+
+async function fetchLB(opts){
+  const tries=(opts&&opts.tries)||2;
+  const ms=(opts&&opts.timeout)||20000;
+  lbState='loading';
+  for(let i=0;i<tries;i++){
+    try{
+      const c=new AbortController();
+      const t=setTimeout(()=>c.abort(),ms);
+      const r=await fetch(API,{signal:c.signal,cache:'no-store'});
+      clearTimeout(t);
+      if(!r.ok) throw new Error('HTTP '+r.status);
+      const data=await r.json();
+      if(Array.isArray(data)){ lbCache=data; cacheLB(); lbState='ok'; return lbCache; }
+      throw new Error('형식 오류');
+    }catch(e){
+      if(i===tries-1){ lbState='offline'; }
+      else await new Promise(r=>setTimeout(r,1500)); /* 서버 기동 대기 */
+    }
+  }
+  return lbCache;
+}
+async function postLB(name,sc,lv){
+  let lastErr;
+  for(let i=0;i<2;i++){
+    try{
+      const c=new AbortController();
+      const t=setTimeout(()=>c.abort(),25000);
+      const r=await fetch(API,{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({name:name,score:sc,level:lv}),
+        signal:c.signal
+      });
+      clearTimeout(t);
+      if(!r.ok) throw new Error('HTTP '+r.status);
+      return await r.json();
+    }catch(e){ lastErr=e; if(i===0) await new Promise(r=>setTimeout(r,1500)); }
+  }
+  throw lastErr;
+}
+/* 서버를 미리 깨워둔다 — 게임하는 동안 기동이 끝나 있도록 */
+function wakeServer(){ fetch(API,{cache:'no-store'}).catch(()=>{}); }
 
 function escapeHTML(s){
   return String(s).replace(/[&<>"']/g,function(c){
     return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
   });
 }
-async function fetchLB(){
-  try{
-    const r=await fetch(API,{signal:AbortSignal.timeout(6000)});
-    if(!r.ok) throw new Error('서버 오류');
-    lbCache=await r.json();
-  }catch(e){ /* 오프라인이면 캐시 유지 */ }
-  return lbCache;
-}
-async function postLB(name,sc,lv){
-  const r=await fetch(API,{
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({name,score:sc,level:lv}),
-    signal:AbortSignal.timeout(8000)
-  });
-  if(!r.ok) throw new Error('등록 실패');
-  return await r.json(); // {entry, rank}
-}
 function lbHTML(highlightId){
-  if(!lbCache.length) return '<div class="lbEmpty">아직 기록이 없습니다.</div>';
+  if(!lbCache.length){
+    return '<div class="lbEmpty">'+(lbState==='offline'
+      ? '서버에 연결하지 못했습니다.<br>잠시 후 다시 시도해 주세요.'
+      : '아직 기록이 없습니다.')+'</div>';
+  }
   const medal=['🥇','🥈','🥉'];
-  return '<div class="lb">'+lbCache.map(function(e,i){
+  const stale=(lbState==='offline')?'<div class="lbNote">저장된 최근 순위입니다 (오프라인)</div>':'';
+  return stale+'<div class="lb">'+lbCache.map(function(e,i){
     return '<div class="lbRow'+(i<3?' top'+(i+1):'')+(e.id===highlightId?' me':'')+'">'+
       '<span class="rk">'+(medal[i]||(i+1))+'</span>'+
       '<span class="nm">'+escapeHTML(e.name)+'</span>'+
@@ -945,11 +1088,13 @@ function lbHTML(highlightId){
   }).join('')+'</div>';
 }
 function qualifies(sc){
-  return sc>0&&(lbCache.length<LB_MAX||sc>lbCache[lbCache.length-1].score);
+  if(sc<=0) return false;
+  if(lbState==='offline') return true; /* 확인 불가 시 일단 등록 시도 */
+  return lbCache.length<LB_MAX||sc>lbCache[lbCache.length-1].score;
 }
 async function showBoard(){
   const wasPlaying=playing; playing=false;
-  card.innerHTML='<h2>순위표 🏆</h2><p>불러오는 중...</p>';
+  card.innerHTML='<h2>순위표 🏆</h2><p class="loadNote">불러오는 중...<br><span class="tiny">서버가 자는 중이면 최대 1분 걸립니다</span></p>';
   overlay.classList.add('on');
   await fetchLB();
   card.innerHTML='<h2>순위표 🏆</h2><p>전 세계 상위 '+LB_MAX+'개 기록</p>'+lbHTML(null);
@@ -957,11 +1102,18 @@ async function showBoard(){
   b.className='btn'; b.textContent='닫기';
   b.onclick=()=>{ overlay.classList.remove('on'); playing=wasPlaying; };
   card.appendChild(b);
+  if(lbState==='offline'){
+    const g=document.createElement('button');
+    g.className='btn ghost'; g.textContent='다시 시도';
+    g.onclick=showBoard;
+    card.appendChild(g);
+  }
   setTimeout(()=>b.focus(),30);
 }
 $('btnBoard').onclick=showBoard;
-/* 시작 시 미리 캐시 로드 */
-fetchLB();
+fetchLB({tries:2,timeout:20000});
+/* 5분마다 서버를 깨워 잠들지 않게 유지 */
+setInterval(wakeServer,5*60*1000);
 
 /* ══ 라운드 전환 ══ */
 function roundTransition(lv){
@@ -972,9 +1124,11 @@ function roundTransition(lv){
 }
 
 /* ══ 진행 ══ */
-function startLevel(lv){
+function startLevel(lv,skipTransition){
   level=lv;
-  roundTransition(lv);
+  if(!skipTransition) roundTransition(lv);
+  else applyRoundColors(lv);
+  $('stageName').textContent=stageName(lv);
   const pos=assignSymbols(buildPositions(lv),lv);
   tiles=pos.map((p,i)=>({id:i,x:p.x,y:p.y,layer:p.layer,sym:p.sym,where:'board',el:null,face:null}));
   tray=[]; history=[]; clearing=false; playing=true; timeLeft=LEVEL_TIME; combo=0; lastMatchAt=0;
@@ -1010,9 +1164,54 @@ function fireworks(){
 }
 function win(){
   playing=false; clearInterval(timerId);
-  score+=timeLeft*2; saveBest(); sWin(); fireworks();
-  show(level+'단계 완료','남은 시간 보너스 <b>'+(timeLeft*2)+'점</b><br>총점 <b>'+score+'점</b>','다음 단계',
-    ()=>{ items.undo++; items.shuffle++; startLevel(level+1); },false);
+  BGM.duck(2200);
+  $('comboWrap').classList.remove('on');
+
+  const timeBonus=timeLeft*2;
+  const perfect=(timeLeft>=LEVEL_TIME*0.5);      /* 절반 이상 남기면 완벽 클리어 */
+  const perfectBonus=perfect?500+level*50:0;
+  const base=score;
+  score+=timeBonus+perfectBonus;
+  saveBest();
+
+  /* 1) 도장 + 빛 쓸기 + 폭죽 */
+  stampClear(); sWin(); fireworks();
+
+  /* 2) 1.3초 뒤 결과 집계 카드 */
+  setTimeout(()=>{
+    const nx=stageTier(level+1);
+    const rewards=perfect?'<div class="rewardRow">되돌리기 <em>+2</em><span>·</span>섞기 <em>+2</em><span>·</span>꺼내기 <em>+1</em></div>'
+                        :'<div class="rewardRow">되돌리기 <em>+1</em><span>·</span>섞기 <em>+1</em></div>';
+    card.innerHTML=
+      '<h2>'+(perfect?'⭐ 완벽 클리어':'단계 '+level+' 클리어')+'</h2>'+
+      '<p>'+stageName(level)+'</p>'+
+      '<div class="tally">'+
+        '<div class="tallyRow"><span class="lab">기본 점수</span><span class="val">'+base.toLocaleString()+'</span></div>'+
+        '<div class="tallyRow"><span class="lab">남은 시간 '+Math.floor(timeLeft/60)+':'+String(timeLeft%60).padStart(2,'0')+'</span><span class="val">+'+timeBonus.toLocaleString()+'</span></div>'+
+        (perfect?'<div class="tallyRow"><span class="lab">시간 절반 이상 남김</span><span class="val">+'+perfectBonus.toLocaleString()+'</span></div>':'')+
+        '<div class="tallyRow total"><span class="lab">총점</span><span class="val">'+score.toLocaleString()+'</span></div>'+
+      '</div>'+
+      rewards+
+      '<div class="nextInfo">'+
+        '<div><b>'+(level+1)+'</b><span>다음 단계</span></div>'+
+        '<div><b>'+nx.layers+'</b><span>층</span></div>'+
+        '<div><b>'+nx.kinds+'</b><span>종류</span></div>'+
+      '</div>';
+    const b=document.createElement('button');
+    b.className='btn'; b.textContent=stageName(level+1)+' 으로';
+    b.onclick=()=>{
+      overlay.classList.remove('on');
+      /* 3) 커튼 연출 후 다음 단계 시작 */
+      const nextLv=level+1;
+      if(perfect){ items.undo+=2; items.shuffle+=2; items.pull+=1; }
+      else { items.undo++; items.shuffle++; }
+      sStage();
+      stageIntro(nextLv,()=>startLevel(nextLv,true));
+    };
+    card.appendChild(b);
+    overlay.classList.add('on');
+    setTimeout(()=>b.focus(),30);
+  },1300);
 }
 function lose(reason){
   playing=false; clearInterval(timerId); saveBest(); sLose();
