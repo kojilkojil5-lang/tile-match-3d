@@ -5,6 +5,11 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#3E7CB1">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>동물 타일매치 3D</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -413,10 +418,222 @@ body.bonus .stat,body.bonus .tool{background:#FFFFFFB3;border-color:#C98F2E55}
 }
 .mapHint b{color:var(--spark2);font-family:'Gowun Batang',serif;font-size:15px}
 /* 지도 보기 버튼 */
-#btnMap{
+#btnMap,#btnHelp,#btnHome{
   width:24px;height:19px;border:none;background:none;cursor:pointer;font-size:13px;
   color:var(--dim);padding:0;line-height:1;
 }
+
+/* ══ 코인 ══ */
+.coinChip{
+  display:inline-flex;align-items:center;gap:4px;
+  padding:4px 9px;border-radius:11px;
+  background:linear-gradient(135deg,#FFE9A8,#FFD166);
+  border:1px solid #C98F2E77;color:#5A3E12;
+  font-family:'Gowun Batang',serif;font-weight:700;font-size:13px;
+}
+.coinChip.bump{animation:coinBump .4s ease-out}
+@keyframes coinBump{0%{transform:scale(1)}40%{transform:scale(1.28)}100%{transform:scale(1)}}
+#hudCoins{
+  position:absolute;top:8px;right:12px;z-index:5;
+}
+/* 부활 화면 */
+.reviveHead{
+  font-family:'Gowun Batang',serif;font-size:22px;margin:0 0 4px;color:var(--danger);
+}
+.reviveRing{
+  width:96px;height:96px;margin:6px auto 14px;position:relative;
+}
+.reviveRing svg{transform:rotate(-90deg)}
+.reviveRing .cnt{
+  position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  font-family:'Gowun Batang',serif;font-size:34px;font-weight:700;color:var(--text);
+}
+.reviveRing circle{fill:none;stroke-width:7;stroke-linecap:round}
+.reviveRing .bg{stroke:var(--line)}
+.reviveRing .fg{stroke:var(--danger);transition:stroke-dashoffset 1s linear}
+.reviveCost{
+  display:flex;align-items:center;justify-content:center;gap:7px;
+  font-size:13px;color:var(--dim);margin-bottom:14px;
+}
+.btn.revive{
+  background:linear-gradient(135deg,#FFD166,#F0A93C);color:#4A320C;
+}
+.btn.revive:disabled{opacity:.4;cursor:default;background:var(--chip);color:var(--dim)}
+.earnRow{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:8px 11px;border-radius:10px;background:var(--chip);
+  margin-bottom:6px;font-size:12.5px;
+}
+.earnRow .v{font-family:'Gowun Batang',serif;font-weight:700;color:#B8860B}
+
+/* ══ 튜토리얼 ══ */
+#tutor{position:fixed;inset:0;z-index:88;display:none;pointer-events:none}
+#tutor.on{display:block}
+/* 어둡게 덮되 특정 영역만 뚫는다 */
+#tutorMask{
+  position:absolute;inset:0;background:#0B1A2ACC;
+  -webkit-mask-image:radial-gradient(circle at 50% 50%,transparent 0,transparent 0,#000 0);
+  mask-image:radial-gradient(circle at 50% 50%,transparent 0,transparent 0,#000 0);
+  transition:-webkit-mask-image .3s ease,mask-image .3s ease;
+}
+/* 강조 테두리 */
+#tutorRing{
+  position:absolute;border:3px solid var(--spark1);border-radius:14px;
+  box-shadow:0 0 0 4px #0B1A2A88,0 0 22px 4px var(--spark1);
+  transition:all .32s cubic-bezier(.3,.9,.4,1);opacity:0;
+}
+#tutorRing.on{opacity:1;animation:ringPulse 1.4s ease-in-out infinite alternate}
+@keyframes ringPulse{from{box-shadow:0 0 0 4px #0B1A2A88,0 0 22px 4px var(--spark1)}
+                     to{box-shadow:0 0 0 4px #0B1A2A88,0 0 34px 8px var(--spark1)}}
+/* 손가락 */
+#tutorHand{
+  position:absolute;font-size:34px;transition:all .32s cubic-bezier(.3,.9,.4,1);
+  opacity:0;pointer-events:none;filter:drop-shadow(0 3px 6px #0008);
+}
+#tutorHand.on{opacity:1;animation:tapAnim 1.25s ease-in-out infinite}
+@keyframes tapAnim{
+  0%,100%{transform:translate(0,0) scale(1)}
+  45%{transform:translate(-5px,-9px) scale(1.12)}
+  60%{transform:translate(0,0) scale(.94)}
+}
+/* 설명 말풍선 */
+#tutorBox{
+  position:absolute;left:50%;transform:translateX(-50%);
+  width:min(320px,calc(100% - 32px));padding:16px 18px;border-radius:15px;
+  background:var(--panel);border:1px solid var(--line);
+  box-shadow:0 14px 34px #0007;backdrop-filter:blur(8px);
+  text-align:center;pointer-events:auto;transition:top .32s ease,bottom .32s ease;
+}
+#tutorBox h3{
+  font-family:'Gowun Batang',serif;font-size:17px;margin:0 0 6px;color:var(--text);
+}
+#tutorBox p{font-size:13px;line-height:1.75;color:var(--dim);margin:0 0 12px}
+#tutorBox p b{color:var(--text);font-weight:400}
+#tutorBox .row{display:flex;gap:8px}
+#tutorBox button{
+  flex:1;padding:11px;border-radius:11px;border:none;cursor:pointer;
+  font-family:'Gowun Batang',serif;font-size:14px;font-weight:700;
+  background:var(--accent);color:#fff;
+}
+#tutorBox button.ghost{
+  background:transparent;border:1px solid var(--line);color:var(--dim);
+  font-weight:400;flex:0 0 40%;
+}
+.tutorDots{display:flex;gap:5px;justify-content:center;margin-bottom:10px}
+.tutorDots i{width:6px;height:6px;border-radius:50%;background:var(--line);display:block}
+.tutorDots i.on{background:var(--accent);width:16px;border-radius:3px}
+
+/* ══ 홈 화면 ══ */
+#home{
+  position:fixed;inset:0;z-index:95;display:flex;flex-direction:column;
+  align-items:center;padding:26px 18px 24px;overflow-y:auto;
+  background:radial-gradient(120% 80% at 50% 0%, var(--bg1) 0%, var(--bg2) 55%, var(--bg3) 100%);
+}
+#home.off{display:none}
+/* 배경 발자국 패턴 */
+#home::before{
+  content:"";position:absolute;inset:0;pointer-events:none;opacity:.16;
+  background-image:radial-gradient(circle at 20% 15%,var(--text) 2.5px,transparent 3px),
+    radial-gradient(circle at 78% 28%,var(--text) 2.5px,transparent 3px),
+    radial-gradient(circle at 35% 62%,var(--text) 2.5px,transparent 3px),
+    radial-gradient(circle at 88% 74%,var(--text) 2.5px,transparent 3px),
+    radial-gradient(circle at 12% 88%,var(--text) 2.5px,transparent 3px),
+    radial-gradient(circle at 60% 45%,var(--text) 2.5px,transparent 3px);
+  background-size:190px 190px;
+}
+.homeInner{
+  position:relative;z-index:1;width:100%;max-width:390px;
+  display:flex;flex-direction:column;align-items:center;flex:1;
+}
+/* 로고 */
+.logo{text-align:center;margin:8px 0 18px}
+.logo .mark{display:flex;justify-content:center;gap:2px;margin-bottom:8px}
+.logo .mark svg{width:44px;height:44px}
+.logo .mark svg:nth-child(2){width:54px;height:54px;margin-top:-6px}
+.logo h1{
+  font-family:'Gowun Batang',serif;font-size:33px;margin:0;letter-spacing:.02em;
+  color:var(--text);text-shadow:0 2px 0 #ffffff55,0 4px 14px #0002;
+}
+.logo .en{
+  font-size:10px;letter-spacing:.42em;color:var(--dim);margin-top:5px;
+}
+/* 상단 버튼 줄 */
+.homeBar{display:flex;gap:7px;width:100%;margin-bottom:12px;align-items:stretch}
+.homeCoin{
+  flex:1;display:flex;align-items:center;justify-content:center;gap:5px;
+  padding:10px;border-radius:13px;
+  background:linear-gradient(135deg,#FFE9A8,#FFD166);
+  border:1.5px solid #C98F2E77;color:#5A3E12;
+  font-family:'Gowun Batang',serif;font-weight:700;font-size:16px;
+}
+.homeIco{
+  width:46px;flex:none;border-radius:13px;border:1.5px solid var(--line);
+  background:var(--chip);font-size:19px;cursor:pointer;color:var(--text);
+  display:flex;align-items:center;justify-content:center;
+}
+.homeIco:active{transform:translateY(2px)}
+#homeLang{font-family:'Gowun Batang',serif;font-size:13px;font-weight:700;letter-spacing:.04em}
+/* 진행 카드 */
+.progCard{
+  width:100%;padding:20px 18px;border-radius:19px;margin-bottom:12px;
+  background:var(--panel);border:1px solid var(--line);
+  box-shadow:0 10px 26px #0000002e;text-align:center;
+}
+.progCard .lab{font-size:10.5px;letter-spacing:.26em;color:var(--dim);margin-bottom:6px}
+.progCard .lv{
+  font-family:'Gowun Batang',serif;font-size:52px;line-height:1;font-weight:700;
+  color:var(--text);
+}
+.progCard .nm{font-size:14px;color:var(--dim);margin-top:6px;font-family:'Gowun Batang',serif}
+.progStars{display:flex;justify-content:center;gap:5px;margin-top:11px;font-size:19px}
+.progStars .s{opacity:.28;filter:grayscale(1)}
+.progStars .s.on{opacity:1;filter:none}
+/* 메인 버튼 */
+.homeBtn{
+  width:100%;padding:16px;border-radius:15px;border:none;cursor:pointer;margin-bottom:9px;
+  font-family:'Gowun Batang',serif;font-size:18px;font-weight:700;letter-spacing:.03em;
+  background:var(--accent);color:#fff;box-shadow:0 5px 0 #00000022;
+}
+.homeBtn:active{transform:translateY(3px);box-shadow:0 2px 0 #00000022}
+.homeBtn.sub{
+  background:var(--chip);color:var(--text);border:1.5px solid var(--line);
+  font-size:15px;padding:13px;box-shadow:none;
+}
+.homeBtn.gold{background:linear-gradient(135deg,#FFD166,#F0A93C);color:#4A320C}
+/* 기록 줄 */
+.homeStats{display:flex;gap:7px;width:100%;margin-bottom:12px}
+.homeStats div{
+  flex:1;padding:11px 6px;border-radius:13px;text-align:center;
+  background:var(--chip);border:1px solid var(--line);
+}
+.homeStats b{display:block;font-family:'Gowun Batang',serif;font-size:19px;line-height:1.15}
+.homeStats span{font-size:9.5px;letter-spacing:.14em;color:var(--dim)}
+/* 칭호 */
+.titleBadge{
+  width:100%;padding:11px;border-radius:13px;text-align:center;margin-bottom:12px;
+  background:linear-gradient(135deg,var(--spark1),var(--spark2));color:#3A2A0E;
+  font-family:'Gowun Batang',serif;font-weight:700;font-size:14px;
+}
+.homeFoot{
+  margin-top:auto;padding-top:14px;font-size:10.5px;color:var(--dim);text-align:center;line-height:1.7;
+}
+/* 설정 시트 */
+.setRow{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:12px 4px;border-bottom:1px solid var(--line);font-size:14px;
+}
+.setRow:last-of-type{border-bottom:none}
+.setRow .l{display:flex;align-items:center;gap:8px}
+.toggle{
+  width:50px;height:29px;border-radius:15px;border:none;cursor:pointer;position:relative;
+  background:var(--line);transition:background .2s;flex:none;
+}
+.toggle.on{background:var(--accent)}
+.toggle::after{
+  content:"";position:absolute;top:3px;left:3px;width:23px;height:23px;border-radius:50%;
+  background:#fff;transition:transform .2s;box-shadow:0 1px 3px #0004;
+}
+.toggle.on::after{transform:translateX(21px)}
 
 /* ══ 막 완주 엔딩 ══ */
 .endingWrap{
@@ -525,10 +742,55 @@ body.bonus .stat,body.bonus .tool{background:#FFFFFFB3;border-color:#C98F2E55}
 <symbol id="an-tiger" viewBox="0 0 64 64"><circle cx="16" cy="18" r="7" fill="#F49E4C" stroke="#2A2118" stroke-width="2.2" /> <circle cx="16" cy="18" r="4" fill="#3D322C" /> <circle cx="48" cy="18" r="7" fill="#F49E4C" stroke="#2A2118" stroke-width="2.2" /> <circle cx="48" cy="18" r="4" fill="#3D322C" /> <circle cx="32" cy="35" r="21" fill="#F49E4C" stroke="#2A2118" stroke-width="2.2" /> <path d="M 32 16 L 30 23 L 34 23 Z" fill="#2A2118" /> <path d="M 24 19 L 26 24 L 22 23 Z" fill="#2A2118" /> <path d="M 40 19 L 38 24 L 42 23 Z" fill="#2A2118" /> <path d="M 12 33 L 18 35 L 13 38 Z" fill="#2A2118" /> <path d="M 52 33 L 46 35 L 51 38 Z" fill="#2A2118" /> <ellipse cx="32" cy="43" rx="8" ry="5.5" fill="#FFF8EE" /> <circle cx="22" cy="33" r="3" fill="#2A2118" /> <circle cx="20.8" cy="31.8" r="1" fill="#FFFFFF" /> <circle cx="42" cy="33" r="3" fill="#2A2118" /> <circle cx="40.8" cy="31.8" r="1" fill="#FFFFFF" /> <polygon points="32,40 29,38 35,38" fill="#2A2118" /> <path d="M 32 40 L 32 43 M 29.5 44 Q 32 46 34.5 44" stroke="#2A2118" stroke-width="1.6" stroke-linecap="round" fill="none" /></symbol>
 </defs></svg>
 <canvas id="fx"></canvas>
+<div id="home">
+  <div class="homeInner">
+    <div class="logo">
+      <div class="mark">
+        <svg viewBox="0 0 64 64"><use href="#an-cat"/></svg>
+        <svg viewBox="0 0 64 64"><use href="#an-rabbit"/></svg>
+        <svg viewBox="0 0 64 64"><use href="#an-bear"/></svg>
+      </div>
+      <h1 id="logoTitle">동물 타일매치</h1>
+      <div class="en" id="logoSub">ANIMAL TILE MATCH</div>
+    </div>
+
+    <div class="homeBar">
+      <div class="homeCoin">🪙 <span id="homeCoin">0</span></div>
+      <button class="homeIco" id="homeLang" title="Language">KO</button>
+      <button class="homeIco" id="homeRank" title="순위표">🏆</button>
+      <button class="homeIco" id="homeMap" title="스테이지 지도">🗺️</button>
+      <button class="homeIco" id="homeSet" title="설정">⚙️</button>
+    </div>
+
+    <div class="progCard">
+      <div class="lab" id="lblContinue">CONTINUE FROM</div>
+      <div class="lv" id="homeLv">1</div>
+      <div class="nm" id="homeStage">새벽 들녘</div>
+      <div class="progStars" id="homeStars"></div>
+    </div>
+
+    <button class="homeBtn" id="homePlay">시작</button>
+    <button class="homeBtn sub" id="homeNew">처음부터</button>
+
+    <div class="homeStats">
+      <div><b id="homeBest">0</b><span id="lblBest">최고 점수</span></div>
+      <div><b id="homeBestLv">1</b><span id="lblBestLv">최고 단계</span></div>
+      <div><b id="homeActs">-</b><span id="lblActs">완주한 막</span></div>
+    </div>
+
+    <div class="titleBadge" id="homeTitle" style="display:none"></div>
+
+    <div class="homeFoot">
+      <span id="homeHint1">같은 동물 3마리를 모아 타일을 없애세요</span><br>
+      <span id="homeHint2">5단계마다 🌟 보너스 · 20단계마다 👑 완주</span>
+    </div>
+  </div>
+</div>
+
 <div class="app" id="app">
   <header>
     <div>
-      <div class="brand">동물 타일매치<small id="stageName">TILE MATCH 3D</small></div>
+      <div class="brand"><span id="brandName">동물 타일매치</span><small id="stageName">TILE MATCH 3D</small></div>
       <div class="row" id="themes">
         <button class="swatch sw-sky" data-t="sky" title="새벽 하늘" aria-label="새벽 하늘 테마"></button>
         <button class="swatch sw-meadow" data-t="meadow" title="봄 들판" aria-label="봄 들판 테마"></button>
@@ -536,15 +798,21 @@ body.bonus .stat,body.bonus .tool{background:#FFFFFFB3;border-color:#C98F2E55}
         <button id="btnSound" title="효과음 켜기/끄기" aria-label="효과음 켜기 끄기">🔊</button>
         <button id="btnMusic" title="배경음악 켜기/끄기" aria-label="배경음악 켜기 끄기">🎵</button>
         <button id="btnMap" title="스테이지 지도" aria-label="스테이지 지도 보기">🗺️</button>
+        <button id="btnHelp" title="게임 방법" aria-label="게임 방법 보기">❓</button>
+        <button id="btnHome" title="홈으로" aria-label="홈으로">🏠</button>
         <button id="btnBoard" title="순위표" aria-label="순위표 보기">🏆</button>
       </div>
     </div>
     <div class="stats">
-      <div class="stat"><b id="hudLevel">1</b><span>단계</span></div>
-      <div class="stat" id="scoreStat"><b id="hudScore">0</b><span>점수</span></div>
-      <div class="stat" id="timeStat"><b id="hudTime">5:00</b><span>남은시간</span></div>
+      <div class="stat"><b id="hudLevel">1</b><span id="lblLevel">단계</span></div>
+      <div class="stat" id="scoreStat"><b id="hudScore">0</b><span id="lblScore">점수</span></div>
+      <div class="stat" id="timeStat"><b id="hudTime">5:00</b><span id="lblTime">남은시간</span></div>
     </div>
   </header>
+
+  <div style="display:flex;justify-content:flex-end;margin:0 2px 6px">
+    <span class="coinChip" id="coinChip">🪙 <span id="hudCoin">0</span></span>
+  </div>
 
   <div id="bonusBar">
     <span>🌟 <b>골든 러시</b></span>
@@ -570,6 +838,12 @@ body.bonus .stat,body.bonus .tool{background:#FFFFFFB3;border-color:#C98F2E55}
   </div>
 </div>
 
+<div id="tutor">
+  <div id="tutorMask"></div>
+  <div id="tutorRing"></div>
+  <div id="tutorHand">👆</div>
+  <div id="tutorBox"></div>
+</div>
 <div id="stageFX"></div>
 <div id="banner"><div class="big"></div><div class="sub"></div></div>
 <div id="flash"></div>
@@ -578,6 +852,210 @@ body.bonus .stat,body.bonus .tool{background:#FFFFFFB3;border-color:#C98F2E55}
 <script>
 (function(){
 "use strict";
+
+/* ══════════════════════════════════════════════
+   다국어 (한국어 / English)
+   T('key') 로 현재 언어의 문자열을 얻는다.
+   중괄호 자리표시자는 T('key',{n:3}) 형태로 채운다.
+   ══════════════════════════════════════════════ */
+let LANG='ko';
+try{ LANG=localStorage.getItem('animaltile.lang')||(navigator.language||'ko').slice(0,2); }catch(e){}
+if(LANG!=='en') LANG='ko';
+
+const I18N={
+ko:{
+  /* 공통 */
+  appTitle:'동물 타일매치', appSub:'ANIMAL TILE MATCH',
+  close:'닫기', retry:'다시 시도', home:'홈으로', playAgain:'다시 하기',
+  cancel:'취소', level:'단계', score:'점수', timeLeft:'남은시간',
+  /* 홈 */
+  continueFrom:'CONTINUE FROM', start:'게임 시작', continueLv:'{n}단계 이어하기',
+  newGame:'처음부터 시작', bestScore:'최고 점수', bestLevel:'최고 단계',
+  actsDone:'완주한 막', actUnit:'{n}막',
+  homeHint1:'같은 동물 3마리를 모아 타일을 없애세요',
+  homeHint2:'5단계마다 🌟 보너스 · 20단계마다 👑 완주',
+  confirmNew:'처음부터 다시 시작할까요?\\n(코인과 최고 기록은 유지됩니다)',
+  confirmHome:'홈으로 돌아갈까요?\\n진행 중인 판은 사라집니다.',
+  /* 도구 */
+  tUndo:'되돌리기', tUndoD:'직전 타일 복귀',
+  tShuffle:'섞기', tShuffleD:'남은 타일 재배치',
+  tPull:'꺼내기', tPullD:'받침 3칸 비우기',
+  /* 콤보 */
+  comboKeep:'연속 매치 유지 중', comboPer:'매치당 {n}점',
+  /* 클리어 */
+  clearPerfect:'⭐ 완벽 클리어', clearNormal:'단계 {n} 클리어',
+  baseScore:'기본 점수', timeBonusL:'남은 시간 {t}', perfectBonusL:'시간 절반 이상 남김',
+  total:'총점', gotCoins:'획득 코인', held:'보유 {n}',
+  nextStage:'다음 단계', layers:'층', kinds:'종류',
+  toStage:'{s} 으로', bonusNext:'다음은 골든 러시 · 점수 {n}배',
+  /* 보너스 */
+  bonusName:'골든 러시', bonusTag:'BONUS STAGE',
+  bonusDesc:'층이 없습니다 · 전부 집을 수 있습니다<br>{t}초 동안 점수 {n}배',
+  bonusAllClear:'🌟 완전 정리!', bonusEndT:'골든 러시 종료',
+  bonusEarned:'보너스 획득 점수', clearedSets:'없앤 조합',
+  rushScore:'러시 점수 (x{n})', allTidy:'전부 정리',
+  bonusTimeUp:'시간 종료', bonusAllDone:'모두 정리',
+  /* 막 완주 */
+  actComplete:'🏅 {n}막 완주', actReached:'{n}단계까지 도달했습니다',
+  titleGot:'칭호 획득', actBonus:'{n}막 완주 보상', actCoins:'완주 보상 코인',
+  actNextOpen:'<b>{n}막</b>이 열립니다<br>제한시간 더 짧게 · 받침 5칸 유지<br>아이템을 모두 채워 드립니다',
+  actContinue:'{n}막 계속하기', stopHere:'여기서 마치고 기록 남기기',
+  actDone:'{n}막 완주',
+  /* 게임 오버 · 부활 */
+  gameOver:'게임 종료', trayFull:'받침이 가득 찼습니다', timeUp:'시간이 끝났습니다',
+  danger:'위기!', reviveCost:'부활 비용', reviveBtn:'부활하기',
+  noCoins:'코인이 부족합니다', coinShort:'코인 부족',
+  giveUp:'포기하고 기록 남기기',
+  /* 리더보드 */
+  rankTitle:'순위표 🏆', rankSub:'전 세계 상위 {n}개 기록',
+  loading:'불러오는 중...', loadSlow:'서버가 자는 중이면 최대 1분 걸립니다',
+  noRecords:'아직 기록이 없습니다.',
+  offlineMsg:'서버에 연결하지 못했습니다.<br>잠시 후 다시 시도해 주세요.',
+  offlineNote:'저장된 최근 순위입니다 (오프라인)',
+  newRecord:'신기록 등록', willRank:'순위표에 오를 점수입니다!',
+  namePlace:'이름 (최대 12자)', submit:'등록', submitting:'등록 중...',
+  rankedAt:'{n}위 등록!', regFail:'등록 실패',
+  regFailMsg:'서버 연결 문제입니다.<br>점수: <b>{n}점</b>',
+  skipReg:'등록 없이 다시 하기', shortBy:'<br>{m}위까지 {n}점 부족',
+  stageUnit:'{n}단계',
+  /* 지도 */
+  mapTitle:'스테이지 지도 🗺️', mapLabel:'STAGE MAP', inProgress:'{s} 진행 중',
+  bonusNow:'지금이 <b>보너스</b> 스테이지입니다',
+  bonusNextOne:'다음이 <b>보너스</b> 스테이지!',
+  bonusIn:'<b>{n}</b>판 더 깨면 보너스 스테이지',
+  /* 설정 */
+  settings:'설정 ⚙️', sBgm:'🎵 배경음악', sSfx:'🔊 효과음', sVibe:'📳 진동',
+  sLang:'🌐 언어',
+  /* 튜토리얼 */
+  tu1t:'같은 동물 3마리', tu1b:'아래 <b>받침</b>에 같은 동물이 <b>3마리</b> 모이면 타일이 부서집니다.',
+  tu2t:'밝은 타일을 누르세요', tu2b:'위에 다른 타일이 덮인 것은 <b>어둡게</b> 표시되고 고를 수 없습니다.<br>밝은 타일을 하나 눌러 보세요.',
+  tu3t:'받침이 차면 끝', tu3b:'받침이 모두 차면 게임이 끝납니다.<br>맞출 수 없는 타일은 신중히 고르세요.',
+  tu4t:'막히면 도구를 쓰세요', tu4b:'<b>되돌리기</b>는 방금 고른 타일을 되돌리고,<br><b>섞기</b>는 판을 다시 섞습니다.',
+  tu5t:'코인과 부활', tu5b:'단계를 깨면 <b>🪙 코인</b>이 쌓입니다.<br>게임이 끝날 위기에 코인으로 <b>부활</b>할 수 있습니다.',
+  tuSkip:'건너뛰기', tuNext:'다음', tuStart:'시작하기',
+  anon:'익명', pts:'점', rewardUndo:'되돌리기', rewardShuffle:'섞기', rewardPull:'꺼내기',
+  themeSky:'새벽 하늘', themeMeadow:'봄 들판', themeMoon:'달빛 밤',
+  bgmOn:'배경음악 켜기', bgmOff:'배경음악 끄기', bgmMissing:'bgm/calm.mp3 파일이 없습니다',
+  actStages:'{n}단계<br>완주', titleAward:'칭호 획득 · {s}',
+  /* 스테이지 이름 */
+  stages:['새벽 들녘','안개 숲','달맞이 언덕','바람의 계곡','별빛 호수','구름 위 정원','서리 골짜기','노을 절벽','오로라 평원','꿈의 성'],
+  acts:['달빛 여행자','숲의 수호자','별을 세는 이','꿈의 문지기'],
+  finaleTag:'👑 {n}막 마지막',
+  /* 동물 이름 */
+  animals:{dog:'강아지',cat:'고양이',rabbit:'토끼',bear:'곰',chick:'병아리',fox:'여우',
+    frog:'개구리',hamster:'햄스터',koala:'코알라',lion:'사자',monkey:'원숭이',owl:'부엉이',
+    panda:'판다',penguin:'펭귄',pig:'돼지',tiger:'호랑이'},
+  /* 콤보 문구 */
+  combos:{2:['NICE!','2연속'],3:['GREAT!','3연속'],4:['AWESOME!','4연속'],5:['UNREAL!','5연속'],6:['LEGEND!','폭주 중']}
+},
+en:{
+  appTitle:'Animal Tile Match', appSub:'ANIMAL TILE MATCH',
+  close:'Close', retry:'Retry', home:'Home', playAgain:'Play Again',
+  cancel:'Cancel', level:'STAGE', score:'SCORE', timeLeft:'TIME',
+  continueFrom:'CONTINUE FROM', start:'Start Game', continueLv:'Continue Stage {n}',
+  newGame:'Start Over', bestScore:'Best Score', bestLevel:'Best Stage',
+  actsDone:'Acts Cleared', actUnit:'Act {n}',
+  homeHint1:'Match three of the same animal to clear tiles',
+  homeHint2:'🌟 Bonus every 5 stages · 👑 Finale every 20',
+  confirmNew:'Start over from stage 1?\\n(Coins and best records are kept)',
+  confirmHome:'Return to home?\\nYour current run will be lost.',
+  tUndo:'Undo', tUndoD:'Return last tile',
+  tShuffle:'Shuffle', tShuffleD:'Rearrange tiles',
+  tPull:'Pull Out', tPullD:'Clear 3 tray slots',
+  comboKeep:'Combo active', comboPer:'{n} pts per match',
+  clearPerfect:'⭐ Perfect Clear', clearNormal:'Stage {n} Clear',
+  baseScore:'Base score', timeBonusL:'Time left {t}', perfectBonusL:'Over half time left',
+  total:'Total', gotCoins:'Coins earned', held:'total {n}',
+  nextStage:'Next stage', layers:'Layers', kinds:'Types',
+  toStage:'Go to {s}', bonusNext:'Golden Rush next · {n}x score',
+  bonusName:'Golden Rush', bonusTag:'BONUS STAGE',
+  bonusDesc:'No layers · every tile is free<br>{n}x score for {t} seconds',
+  bonusAllClear:'🌟 All Cleared!', bonusEndT:'Golden Rush Over',
+  bonusEarned:'Bonus points earned', clearedSets:'Sets cleared',
+  rushScore:'Rush score (x{n})', allTidy:'All cleared',
+  bonusTimeUp:"Time's up", bonusAllDone:'All cleared',
+  actComplete:'🏅 Act {n} Complete', actReached:'Reached stage {n}',
+  titleGot:'Title earned', actBonus:'Act {n} completion', actCoins:'Completion coins',
+  actNextOpen:'<b>Act {n}</b> unlocked<br>Shorter time · 5 tray slots<br>All items refilled',
+  actContinue:'Continue to Act {n}', stopHere:'Stop here and save record',
+  actDone:'Act {n} completed',
+  gameOver:'Game Over', trayFull:'The tray is full', timeUp:"Time's up",
+  danger:'Danger!', reviveCost:'Revive cost', reviveBtn:'Revive',
+  noCoins:'Not enough coins', coinShort:'Not enough',
+  giveUp:'Give up and save record',
+  rankTitle:'Leaderboard 🏆', rankSub:'Global top {n}',
+  loading:'Loading...', loadSlow:'May take up to a minute if the server is asleep',
+  noRecords:'No records yet.',
+  offlineMsg:'Could not reach the server.<br>Please try again shortly.',
+  offlineNote:'Showing last saved ranking (offline)',
+  newRecord:'New Record', willRank:'This score makes the leaderboard!',
+  namePlace:'Name (max 12)', submit:'Submit', submitting:'Submitting...',
+  rankedAt:'Ranked #{n}!', regFail:'Submission failed',
+  regFailMsg:'Server connection problem.<br>Score: <b>{n}</b>',
+  skipReg:'Play again without saving', shortBy:'<br>{n} points short of #{m}',
+  stageUnit:'Stage {n}',
+  mapTitle:'Stage Map 🗺️', mapLabel:'STAGE MAP', inProgress:'{s} in progress',
+  bonusNow:'This is the <b>bonus</b> stage',
+  bonusNextOne:'Next is the <b>bonus</b> stage!',
+  bonusIn:'<b>{n}</b> more stages to the bonus',
+  settings:'Settings ⚙️', sBgm:'🎵 Music', sSfx:'🔊 Sound', sVibe:'📳 Vibration',
+  sLang:'🌐 Language',
+  tu1t:'Three of a kind', tu1b:'When <b>three</b> of the same animal gather in the <b>tray</b>, they shatter.',
+  tu2t:'Tap a bright tile', tu2b:'Tiles covered by others appear <b>dark</b> and cannot be picked.<br>Tap one bright tile to continue.',
+  tu3t:'A full tray ends it', tu3b:'The game ends when the tray fills up.<br>Choose tiles you can match.',
+  tu4t:'Use tools when stuck', tu4b:'<b>Undo</b> returns your last tile,<br><b>Shuffle</b> rearranges the board.',
+  tu5t:'Coins and revive', tu5b:'Clearing stages earns <b>🪙 coins</b>.<br>Spend them to <b>revive</b> when you are about to lose.',
+  tuSkip:'Skip', tuNext:'Next', tuStart:'Start',
+  anon:'Anonymous', pts:'', rewardUndo:'Undo', rewardShuffle:'Shuffle', rewardPull:'Pull Out',
+  themeSky:'Dawn Sky', themeMeadow:'Spring Meadow', themeMoon:'Moonlit Night',
+  bgmOn:'Turn music on', bgmOff:'Turn music off', bgmMissing:'bgm/calm.mp3 not found',
+  actStages:'{n} Stages<br>Cleared', titleAward:'Title · {s}',
+  stages:['Dawn Meadow','Misty Forest','Moonrise Hill','Windy Valley','Starlight Lake','Cloud Garden','Frost Hollow','Sunset Cliff','Aurora Plain','Dream Castle'],
+  acts:['Moonlit Wanderer','Forest Guardian','Star Counter','Dream Keeper'],
+  finaleTag:'👑 Act {n} finale',
+  animals:{dog:'Dog',cat:'Cat',rabbit:'Rabbit',bear:'Bear',chick:'Chick',fox:'Fox',
+    frog:'Frog',hamster:'Hamster',koala:'Koala',lion:'Lion',monkey:'Monkey',owl:'Owl',
+    panda:'Panda',penguin:'Penguin',pig:'Pig',tiger:'Tiger'},
+  combos:{2:['NICE!','2 IN A ROW'],3:['GREAT!','3 IN A ROW'],4:['AWESOME!','4 IN A ROW'],5:['UNREAL!','5 IN A ROW'],6:['LEGEND!','ON FIRE']}
+}
+};
+function T(key,vars){
+  let s=(I18N[LANG]&&I18N[LANG][key]);
+  if(s===undefined) s=I18N.ko[key];
+  if(s===undefined) return key;
+  if(typeof s!=='string') return s;
+  if(vars) for(const k in vars) s=s.split('{'+k+'}').join(vars[k]);
+  return s;
+}
+function setLang(l){
+  LANG=(l==='en')?'en':'ko';
+  try{ localStorage.setItem('animaltile.lang',LANG); }catch(e){}
+  document.documentElement.lang=LANG;
+  applyStaticText();
+  if(typeof paintHome==='function' && !$('home').classList.contains('off')) paintHome();
+}
+/* 화면에 고정된 텍스트를 현재 언어로 바꾼다 */
+function applyStaticText(){
+  const set=(id,txt)=>{ const e=$(id); if(e) e.textContent=txt; };
+  document.title=T('appTitle');
+  set('logoTitle',T('appTitle'));
+  set('logoSub',T('appSub'));
+  set('lblLevel',T('level')); set('lblScore',T('score')); set('lblTime',T('timeLeft'));
+  set('lblContinue',T('continueFrom'));
+  set('lblBest',T('bestScore')); set('lblBestLv',T('bestLevel')); set('lblActs',T('actsDone'));
+  set('homeHint1',T('homeHint1'));
+  const h2=$('homeHint2'); if(h2) h2.innerHTML=T('homeHint2');
+  set('brandName',T('appTitle'));
+  /* 도구 버튼 */
+  const tool=(id,t,d)=>{ const e=$(id); if(!e) return;
+    const n=e.querySelector('.n'); const num=n?n.outerHTML:'';
+    e.innerHTML='<b>'+T(t)+'</b>'+T(d)+num; };
+  tool('btnUndo','tUndo','tUndoD');
+  tool('btnShuffle','tShuffle','tShuffleD');
+  tool('btnPull','tPull','tPullD');
+  updateItems&&updateItems();
+}
+
 
 /* ══ 동물 세트 (SVG) ══
    기기별로 모양이 달라지는 이모지 대신 직접 그린 SVG를 쓴다.
@@ -602,7 +1080,8 @@ const ANIMAL_DEFS=[
   {k:'tiger',n:'호랑이'}
 ];
 const ANIMALS=ANIMAL_DEFS.map(a=>a.k);
-const ANIMAL_NAME={}; ANIMAL_DEFS.forEach(a=>ANIMAL_NAME[a.k]=a.n);
+function animalName(k){ return (T('animals')||{})[k]||k; }
+const ANIMAL_NAME=new Proxy({},{get:(o,k)=>animalName(k)});
 
 /* 타일/트레이용 SVG 엘리먼트 생성 */
 function animalSVG(key,px){
@@ -791,7 +1270,7 @@ const BGM={
     b.classList.toggle('off',!this.on);
     b.textContent=this.on?'🎵':'🎵';
     b.classList.toggle('missing',!this.available()&&Object.keys(this.ok).length>0);
-    b.title=this.available()?(this.on?'배경음악 끄기':'배경음악 켜기'):'bgm/calm.mp3 파일이 없습니다';
+    b.title=this.available()?(this.on?T('bgmOff'):T('bgmOn')):T('bgmMissing');
   },
   fade:function(k,target,ms){
     const a=this.el[k]; if(!a) return;
@@ -979,7 +1458,7 @@ function shatter(x,y,sym){
   run();
 }
 /* ══ 콤보 연출 ══ */
-const COMBO_WORDS={2:['NICE!','2연속'],3:['GREAT!','3연속'],4:['AWESOME!','4연속'],5:['UNREAL!','5연속'],6:['LEGEND!','폭주 중']};
+function comboWords(n){ const c=T('combos'); return c[Math.min(6,n)]||c[6]; }
 function rays(x,y,n,color){
   for(let i=0;i<n;i++){
     spawn({kind:'ray',x:x,y:y,a:Math.random()*6.283,len:10,grow:9+Math.random()*7,
@@ -1002,7 +1481,7 @@ function confettiRain(n){
 function banner(n){
   if(REDUCED) return;
   const el=$('banner');
-  const w=COMBO_WORDS[Math.min(6,n)]||COMBO_WORDS[6];
+  const w=comboWords(n);
   el.querySelector('.big').textContent='x'+n;
   el.querySelector('.sub').textContent=w[0]+' · '+w[1];
   el.classList.remove('on'); void el.offsetWidth; el.classList.add('on');
@@ -1025,7 +1504,7 @@ function updateComboUI(){
   wrap.classList.add('on');
   $('comboFill').style.width=(left/COMBO_WINDOW*100)+'%';
   $('comboLabel').textContent='COMBO x'+combo;
-  $('comboHint').textContent='매치당 '+((100+level*10)*combo)+'점';
+  $('comboHint').textContent=T('comboPer',{n:(100+level*10)*combo});
 }
 setInterval(updateComboUI,100);
 
@@ -1204,6 +1683,7 @@ function check(){
       jolt();
       sMatch(combo);
       comboFX(combo,cx,cy-10);
+      vibe(combo>=3?60:25);
       if(combo>=2) BGM.duck(700+combo*120);
     }, 120);
 
@@ -1219,14 +1699,14 @@ function check(){
       if(isBonus){ bonusCleared++; bonusEarned+=gain; updateBonusHUD(); }
       drawTray(-1); updateItems(); clearing=false;
       if(tiles.every(t=>t.where==='gone')){
-        if(isBonus) bonusEnd('모두 정리'); else win();
+        if(isBonus) bonusEnd(T('bonusAllDone')); else win();
       } else check();
     },340);
     return;
   }
   if(tray.length>=TRAY_MAX){
-    if(isBonus) bonusEnd('받침이 가득 찼습니다');
-    else lose('받침이 가득 찼습니다');
+    if(isBonus) bonusEnd(T('trayFull'));
+    else lose(T('trayFull'));
   }
 }
 
@@ -1335,9 +1815,9 @@ function bonusIntro(done){
   const fxEl=$('stageFX');
   fxEl.innerHTML=
     '<div class="goldCurtain t"></div><div class="goldCurtain b"></div>'+
-    '<div class="goldSplash"><div class="k">BONUS STAGE</div>'+
-    '<div class="n">골든 러시</div>'+
-    '<div class="s">층이 없습니다 · 전부 집을 수 있습니다<br>'+BONUS_TIME+'초 동안 점수 '+BONUS_MULT+'배</div></div>';
+    '<div class="goldSplash"><div class="k">'+T('bonusTag')+'</div>'+
+    '<div class="n">'+T('bonusName')+'</div>'+
+    '<div class="s">'+T('bonusDesc',{t:BONUS_TIME,n:BONUS_MULT})+'</div></div>';
   fxEl.classList.add('on');
   setTimeout(()=>{ done&&done(); },600);
   setTimeout(()=>{ fxEl.classList.remove('on'); fxEl.innerHTML=''; },2150);
@@ -1353,8 +1833,7 @@ function updateBonusHUD(){
 }
 
 /* ══ 막 완주 엔딩 ══ */
-const ACT_TITLES=['달빛 여행자','숲의 수호자','별을 세는 이','꿈의 문지기'];
-function actTitle(a){ return ACT_TITLES[(a-1)%ACT_TITLES.length]; }
+function actTitle(a){ const x=T('acts'); return x[(a-1)%x.length]; }
 let actsCleared=0;
 try{ actsCleared=parseInt(localStorage.getItem('animaltile.acts')||'0',10)||0; }catch(e){}
 
@@ -1366,8 +1845,8 @@ function endingSequence(act,done){
     '<div class="endingWrap">'+
       '<div class="crown">👑</div>'+
       '<div class="k">ACT '+act+' COMPLETE</div>'+
-      '<div class="n">'+ACT_LENGTH+'단계<br>완주</div>'+
-      '<div class="s">칭호 획득 · '+actTitle(act)+'</div>'+
+      '<div class="n">'+T('actStages',{n:ACT_LENGTH})+'</div>'+
+      '<div class="s">'+T('titleAward',{s:actTitle(act)})+'</div>'+
     '</div>';
   fxEl.classList.add('on');
   /* 폭죽을 길게 터뜨린다 */
@@ -1410,7 +1889,7 @@ function buildMap(currentLv){
 }
 function mapHTML(currentLv){
   const m=buildMap(currentLv);
-  let html='<div id="mapWrap"><div class="mapTitle">STAGE MAP</div><div class="mapGrid">';
+  let html='<div id="mapWrap"><div class="mapTitle">'+T('mapLabel')+'</div><div class="mapGrid">';
   m.rows.forEach(function(row,r){
     row.forEach(function(lv,c){
       const bonus=isBonusLevel(lv);
@@ -1433,32 +1912,33 @@ function mapHTML(currentLv){
   const nextBonus=Math.ceil(currentLv/BONUS_EVERY)*BONUS_EVERY;
   const left=nextBonus-currentLv;
   if(isBonusLevel(currentLv)){
-    html+='<div class="mapHint">지금이 <b>보너스</b> 스테이지입니다</div>';
+    html+='<div class="mapHint">'+T('bonusNow')+'</div>';
   }else if(left===0){
-    html+='<div class="mapHint">다음이 <b>보너스</b> 스테이지!</div>';
+    html+='<div class="mapHint">'+T('bonusNextOne')+'</div>';
   }else{
-    html+='<div class="mapHint"><b>'+left+'</b>판 더 깨면 보너스 스테이지</div>';
+    html+='<div class="mapHint">'+T('bonusIn',{n:left})+'</div>';
   }
   html+='</div>';
   return html;
 }
 function showMap(){
   const wasPlaying=playing; playing=false;
-  card.innerHTML='<h2>스테이지 지도 🗺️</h2><p>'+
-    (isBonusLevel(level)?'BONUS · 골든 러시':stageName(level))+' 진행 중</p>'+
+  card.innerHTML='<h2>'+T('mapTitle')+'</h2><p>'+
+    T('inProgress',{s:isBonusLevel(level)?('BONUS · '+T('bonusName')):stageName(level)})+'</p>'+
     mapHTML(level);
   const b=document.createElement('button');
-  b.className='btn'; b.textContent='닫기';
+  b.className='btn'; b.textContent=T('close');
   b.onclick=()=>{ overlay.classList.remove('on'); playing=wasPlaying; };
   card.appendChild(b);
   overlay.classList.add('on');
   setTimeout(()=>b.focus(),30);
 }
 $('btnMap').onclick=showMap;
+$('btnHelp').onclick=()=>{ if(playing) startTutor(); };
+$('btnHome').onclick=()=>{ if(confirm(T('confirmHome'))) openHome(); };
 
 /* ══ 스테이지 정보 ══ */
-const STAGE_NAMES=['새벽 들녘','안개 숲','달맞이 언덕','바람의 계곡','별빛 호수','구름 위 정원','서리 골짜기','노을 절벽','오로라 평원','꿈의 성'];
-function stageName(lv){ return STAGE_NAMES[(lv-1)%STAGE_NAMES.length]; }
+function stageName(lv){ const a=T('stages'); return a[(lv-1)%a.length]; }
 function stageTier(lv){
   const layers=Math.min(5,2+Math.ceil(lv/2));
   const kinds=Math.min(ANIMALS.length,6+lv);
@@ -1491,6 +1971,384 @@ function sStage(){
   [0,.09,.18,.30].forEach((d,i)=>tone([392,523,659,784][i],.42,'triangle',.10,d));
   thump(110,.3,.14,.30);
 }
+
+/* ══ 코인 ══
+   스테이지를 깨면 쌓이고, 게임 오버 시 부활에 쓴다.
+   지금은 순수 게임 내 재화이며, 나중에 광고 시청으로 얻는 경로를 붙일 수 있게
+   earnCoins()/spendCoins() 한 곳으로 모아둔다. */
+let coins=0;
+try{ coins=parseInt(localStorage.getItem('animaltile.coins')||'0',10)||0; }catch(e){}
+const REVIVE_BASE=30;          /* 첫 부활 비용 */
+let revivesUsed=0;             /* 한 판에서 쓴 부활 횟수 — 쓸수록 비싸진다 */
+function reviveCost(){ return REVIVE_BASE*Math.pow(2,revivesUsed); }
+
+function saveCoins(){ try{ localStorage.setItem('animaltile.coins',String(coins)); }catch(e){} }
+function paintCoins(bump){
+  const el=$('hudCoin'); if(!el) return;
+  el.textContent=coins.toLocaleString();
+  if(bump){
+    const c=$('coinChip');
+    c.classList.remove('bump'); void c.offsetWidth; c.classList.add('bump');
+  }
+}
+function earnCoins(n){
+  if(n<=0) return 0;
+  coins+=n; saveCoins(); paintCoins(true);
+  tone(880,.12,'sine',.07); tone(1180,.14,'sine',.05,.07);
+  return n;
+}
+function spendCoins(n){
+  if(coins<n) return false;
+  coins-=n; saveCoins(); paintCoins(true);
+  return true;
+}
+/* 스테이지 보상 — 클리어 상태에 따라 차등 */
+function stageCoins(perfect,bonus){
+  if(bonus) return 25;
+  return perfect?20:12;
+}
+paintCoins(false);
+
+/* ══ 부활 ══
+   받침을 절반 이상 비워 이어서 플레이한다.
+   10초 카운트다운을 두어 "지금 결정하라"는 긴장을 만든다. */
+let reviveTimer=null;
+function offerRevive(reason,onDecline){
+  const cost=reviveCost();
+  const can=coins>=cost;
+  let left=10;
+
+  card.innerHTML=
+    '<div class="reviveHead">'+T('danger')+'</div>'+
+    '<p>'+reason+'<br>'+T('stageUnit',{n:level})+' · <b>'+score.toLocaleString()+'</b></p>'+
+    '<div class="reviveRing">'+
+      '<svg width="96" height="96" viewBox="0 0 96 96">'+
+        '<circle class="bg" cx="48" cy="48" r="42"/>'+
+        '<circle class="fg" id="revArc" cx="48" cy="48" r="42" '+
+          'stroke-dasharray="263.9" stroke-dashoffset="0"/>'+
+      '</svg>'+
+      '<div class="cnt" id="revCnt">10</div>'+
+    '</div>'+
+    '<div class="reviveCost">'+T('reviveCost')+' <span class="coinChip">🪙 '+cost+'</span>'+
+      (can?'':' <span style="color:var(--danger)">'+T('coinShort')+'</span>')+'</div>';
+
+  const go=document.createElement('button');
+  go.className='btn revive'; go.disabled=!can;
+  go.textContent=can?T('reviveBtn'):T('noCoins');
+  go.onclick=()=>{
+    if(!spendCoins(cost)) return;
+    clearInterval(reviveTimer);
+    overlay.classList.remove('on');
+    doRevive();
+  };
+  card.appendChild(go);
+
+  const no=document.createElement('button');
+  no.className='btn ghost'; no.textContent=T('giveUp');
+  no.onclick=()=>{ clearInterval(reviveTimer); overlay.classList.remove('on'); onDecline(); };
+  card.appendChild(no);
+
+  overlay.classList.add('on');
+
+  /* 카운트다운 — 시간이 다 되면 자동 포기 */
+  const arc=$('revArc'), cnt=$('revCnt');
+  clearInterval(reviveTimer);
+  reviveTimer=setInterval(()=>{
+    left--;
+    if(cnt) cnt.textContent=left;
+    if(arc) arc.setAttribute('stroke-dashoffset',String(263.9*(1-left/10)));
+    if(left<=3) tone(660,.09,'square',.06);
+    if(left<=0){
+      clearInterval(reviveTimer);
+      overlay.classList.remove('on');
+      onDecline();
+    }
+  },1000);
+}
+/* 실제 부활 처리 — 받침을 비우고 시간을 조금 돌려준다 */
+function doRevive(){
+  revivesUsed++;
+  /* 받침에 있던 타일을 보드로 되돌린다 */
+  const back=tray.slice();
+  back.forEach(t=>{ t.where='board'; });
+  tray=[]; history=[];
+  /* 시간이 다 됐던 경우라면 시간을 보충 */
+  if(timeLeft<=0) timeLeft=Math.max(45,Math.floor(levelTime(level)*0.35));
+  else timeLeft+=20;
+  playing=true; clearing=false;
+  drawTray(-1); drawBoard(); updateItems(); tick();
+  /* 부활 연출 */
+  sStage();
+  confettiRain(40);
+  const r=boardEl.getBoundingClientRect();
+  burst(r.left+r.width/2,r.top+r.height/2,null);
+  clearInterval(timerId);
+  timerId=setInterval(()=>{
+    if(!playing) return;
+    timeLeft--; tick();
+    if(timeLeft===10||timeLeft===5||timeLeft===3) tone(880,.1,'square',.06);
+    if(timeLeft<=0){
+      if(isBonus) bonusEnd(T('bonusTimeUp')); else lose(T('timeUp'));
+    }
+  },1000);
+}
+
+/* ══ 튜토리얼 ══
+   글로 설명하지 않고 실제 게임 요소를 가리켜 직접 눌러보게 한다.
+   첫 실행 때만 뜨고, 이후에는 도움말 버튼으로 다시 볼 수 있다. */
+let tutorDone=false, tutorStep=0, tutorWatch=null;
+try{ tutorDone=localStorage.getItem('animaltile.tutor')==='1'; }catch(e){}
+
+const TUTOR=[
+  {
+    title:'tu1t', body:'tu1b',
+    target:()=>trayEl, place:'above', hand:false, next:'button'
+  },
+  {
+    title:'tu2t', body:'tu2b',
+    target:()=>{
+      const free=tiles.filter(t=>t.where==='board'&&t.el&&isFree(t));
+      return free.length?free[Math.floor(free.length/2)].el:boardEl;
+    },
+    place:'below', hand:true, next:'action'   /* 실제로 눌러야 넘어감 */
+  },
+  {
+    title:'tu3t', body:'tu3b',
+    target:()=>trayEl, place:'above', hand:false, next:'button'
+  },
+  {
+    title:'tu4t', body:'tu4b',
+    target:()=>document.querySelector('.tools'), place:'above', hand:false, next:'button'
+  },
+  {
+    title:'tu5t', body:'tu5b',
+    target:()=>$('coinChip'), place:'below', hand:false, next:'button'
+  }
+];
+
+function tutorPos(el){
+  const r=el.getBoundingClientRect();
+  return {x:r.left,y:r.top,w:r.width,h:r.height,cx:r.left+r.width/2,cy:r.top+r.height/2};
+}
+function showTutorStep(i){
+  if(i>=TUTOR.length){ endTutor(true); return; }
+  tutorStep=i;
+  const step=TUTOR[i];
+  const el=step.target();
+  if(!el){ showTutorStep(i+1); return; }
+  const p=tutorPos(el);
+  const pad=8;
+
+  /* 구멍 뚫린 마스크 */
+  const rx=Math.max(p.w,p.h)/2+pad+6;
+  const mask='radial-gradient(circle at '+p.cx+'px '+p.cy+'px, transparent '+(rx-10)+'px, #000 '+(rx+14)+'px)';
+  const m=$('tutorMask');
+  m.style.webkitMaskImage=mask; m.style.maskImage=mask;
+
+  /* 강조 테두리 */
+  const ring=$('tutorRing');
+  ring.style.left=(p.x-pad)+'px'; ring.style.top=(p.y-pad)+'px';
+  ring.style.width=(p.w+pad*2)+'px'; ring.style.height=(p.h+pad*2)+'px';
+  ring.classList.add('on');
+
+  /* 손가락 */
+  const hand=$('tutorHand');
+  if(step.hand){
+    hand.style.left=(p.cx-6)+'px'; hand.style.top=(p.cy+p.h/2-4)+'px';
+    hand.classList.add('on');
+  }else hand.classList.remove('on');
+
+  /* 설명 상자 — 대상 위/아래에 배치 */
+  const box=$('tutorBox');
+  const dots=TUTOR.map((_,k)=>'<i class="'+(k===i?'on':'')+'"></i>').join('');
+  const btnLabel=(step.next==='action')?'':(i===TUTOR.length-1?T('tuStart'):T('tuNext'));
+  box.innerHTML=
+    '<div class="tutorDots">'+dots+'</div>'+
+    '<h3>'+T(step.title)+'</h3><p>'+T(step.body)+'</p>'+
+    (btnLabel?'<div class="row"><button class="ghost" id="tutorSkip">'+T('tuSkip')+'</button>'+
+      '<button id="tutorNext">'+btnLabel+'</button></div>'
+     :'<div class="row"><button class="ghost" id="tutorSkip">'+T('tuSkip')+'</button></div>');
+
+  if(step.place==='above'){
+    box.style.top='auto'; box.style.bottom=(innerHeight-p.y+16)+'px';
+  }else{
+    box.style.bottom='auto'; box.style.top=(p.y+p.h+16)+'px';
+  }
+  /* 화면 밖으로 나가지 않게 보정 */
+  requestAnimationFrame(()=>{
+    const br=box.getBoundingClientRect();
+    if(br.top<8){ box.style.bottom='auto'; box.style.top='8px'; }
+    if(br.bottom>innerHeight-8){ box.style.top='auto'; box.style.bottom='8px'; }
+  });
+
+  const sk=$('tutorSkip'); if(sk) sk.onclick=()=>endTutor(true);
+  const nx=$('tutorNext'); if(nx) nx.onclick=()=>showTutorStep(i+1);
+
+  /* 직접 눌러야 넘어가는 단계 — 타일 수가 줄면 성공으로 본다 */
+  clearInterval(tutorWatch);
+  if(step.next==='action'){
+    const before=tiles.filter(t=>t.where==='board').length;
+    tutorWatch=setInterval(()=>{
+      if(tiles.filter(t=>t.where==='board').length<before){
+        clearInterval(tutorWatch);
+        setTimeout(()=>showTutorStep(i+1),450);
+      }
+    },160);
+  }
+}
+function startTutor(){
+  if(!playing) return;
+  $('tutor').classList.add('on');
+  /* 튜토리얼 동안은 시간이 흐르지 않게 */
+  clearInterval(timerId);
+  showTutorStep(0);
+}
+function endTutor(save){
+  clearInterval(tutorWatch);
+  $('tutor').classList.remove('on');
+  $('tutorRing').classList.remove('on');
+  $('tutorHand').classList.remove('on');
+  if(save){
+    tutorDone=true;
+    try{ localStorage.setItem('animaltile.tutor','1'); }catch(e){}
+  }
+  /* 타이머 재개 */
+  if(playing){
+    clearInterval(timerId);
+    timerId=setInterval(()=>{
+      if(!playing) return;
+      timeLeft--; tick();
+      if(timeLeft===10||timeLeft===5||timeLeft===3) tone(880,.1,'square',.06);
+      if(timeLeft<=0){ if(isBonus) bonusEnd(T('bonusTimeUp')); else lose(T('timeUp')); }
+    },1000);
+  }
+}
+window.addEventListener('resize',()=>{
+  if($('tutor').classList.contains('on')) showTutorStep(tutorStep);
+});
+
+/* ══ 진행 상황 저장 ══
+   홈에서 '이어하기'로 돌아올 수 있도록 도달 단계와 별 등급을 남긴다. */
+let progress={lv:1, stars:{}};
+try{ progress=JSON.parse(localStorage.getItem('animaltile.prog'))||progress; }catch(e){}
+if(!progress.stars) progress.stars={};
+
+function saveProgress(){ try{ localStorage.setItem('animaltile.prog',JSON.stringify(progress)); }catch(e){} }
+/* 별 등급 — 남은 시간 비율로 1~3개 */
+function starsFor(lv,left){
+  const t=levelTime(lv);
+  const r=left/t;
+  return r>=0.5?3:(r>=0.25?2:1);
+}
+function recordStage(lv,left){
+  const s=starsFor(lv,left);
+  if((progress.stars[lv]||0)<s) progress.stars[lv]=s;
+  if(lv+1>progress.lv) progress.lv=lv+1;
+  saveProgress();
+  return s;
+}
+
+/* ══ 홈 화면 ══ */
+const homeEl=$('home');
+function paintHome(){
+  $('homeCoin').textContent=coins.toLocaleString();
+  const lb=$('homeLang'); if(lb) lb.textContent=(LANG==='en')?'EN':'KO';
+  const lv=Math.max(1,progress.lv);
+  $('homeLv').textContent=lv;
+  $('homeStage').textContent=isBonusLevel(lv)?('BONUS · '+T('bonusName'))
+    :(isActFinale(lv)?T('finaleTag',{n:actOf(lv)}):stageName(lv));
+  /* 직전 단계의 별 등급 표시 */
+  const prev=Math.max(1,lv-1);
+  const got=progress.stars[prev]||0;
+  $('homeStars').innerHTML=[1,2,3].map(i=>'<span class="s'+(i<=got?' on':'')+'">★</span>').join('');
+  $('homeBest').textContent=(best.score||0).toLocaleString();
+  $('homeBestLv').textContent=best.level||1;
+  $('homeActs').textContent=actsCleared?T('actUnit',{n:actsCleared}):'-';
+  const tb=$('homeTitle');
+  if(actsCleared){ tb.style.display='block'; tb.textContent='👑 '+actTitle(actsCleared); }
+  else tb.style.display='none';
+  /* 1단계면 '이어하기' 대신 '시작하기' */
+  $('homePlay').textContent=lv>1?T('continueLv',{n:lv}):T('start');
+  $('homeNew').textContent=T('newGame');
+  $('homeNew').style.display=lv>1?'block':'none';
+}
+function openHome(){
+  playing=false; clearInterval(timerId); clearInterval(reviveTimer);
+  BGM.stop();
+  overlay.classList.remove('on');
+  homeEl.classList.remove('off');
+  paintHome();
+}
+function closeHome(){ homeEl.classList.add('off'); }
+
+function beginGame(lv){
+  closeHome();
+  score=0; combo=0; lastMatchAt=0; revivesUsed=0;
+  items={undo:3,shuffle:3,pull:1};
+  /* 이어하기로 뒤 단계부터 시작하면 아이템을 조금 더 준다 */
+  if(lv>=9){ items.undo+=2; items.shuffle+=2; }
+  if(lv>=16){ items.pull+=1; }
+  ac(); /* 사용자 제스처로 오디오 활성화 */
+  startLevel(lv);
+}
+$('homePlay').onclick=()=>beginGame(Math.max(1,progress.lv));
+$('homeNew').onclick=()=>{
+  if(confirm(T('confirmNew'))){
+    progress.lv=1; saveProgress(); beginGame(1);
+  }
+};
+$('homeLang').onclick=()=>{ setLang(LANG==='en'?'ko':'en'); };
+$('homeRank').onclick=()=>showBoard();
+$('homeMap').onclick=()=>{ level=Math.max(1,progress.lv); showMap(); };
+$('homeSet').onclick=()=>showSettings();
+
+/* ══ 설정 ══ */
+function showSettings(){
+  const wasPlaying=playing; playing=false;
+  card.innerHTML='<h2>'+T('settings')+'</h2>'+
+    '<div style="text-align:left;margin:14px 0 16px">'+
+      '<div class="setRow"><span class="l">'+T('sBgm')+'</span>'+
+        '<button class="toggle'+(BGM.on?' on':'')+'" id="tgBgm"></button></div>'+
+      '<div class="setRow"><span class="l">'+T('sSfx')+'</span>'+
+        '<button class="toggle'+(!muted?' on':'')+'" id="tgSfx"></button></div>'+
+      '<div class="setRow"><span class="l">'+T('sVibe')+'</span>'+
+        '<button class="toggle'+(vibeOn?' on':'')+'" id="tgVibe"></button></div>'+
+      '<div class="setRow"><span class="l">'+T('sLang')+'</span>'+
+        '<button class="toggle'+(LANG==='en'?' on':'')+'" id="tgLang"></button>'+
+        '<span style="font-size:12px;color:var(--dim);margin-left:6px">'+(LANG==='en'?'EN':'한국어')+'</span></div>'+
+    '</div>';
+  const b=document.createElement('button');
+  b.className='btn'; b.textContent=T('close');
+  b.onclick=()=>{ overlay.classList.remove('on'); playing=wasPlaying; };
+  card.appendChild(b);
+
+  const home=document.createElement('button');
+  home.className='btn ghost'; home.textContent=T('home');
+  home.onclick=()=>{ overlay.classList.remove('on'); openHome(); };
+  card.appendChild(home);
+
+  overlay.classList.add('on');
+  $('tgBgm').onclick=function(){ BGM.toggle(); this.classList.toggle('on',BGM.on); };
+  $('tgSfx').onclick=function(){
+    muted=!muted; $('btnSound').textContent=muted?'🔇':'🔊';
+    try{ localStorage.setItem('animaltile.muted',muted?'1':'0'); }catch(e){}
+    this.classList.toggle('on',!muted);
+  };
+  $('tgVibe').onclick=function(){
+    vibeOn=!vibeOn;
+    try{ localStorage.setItem('animaltile.vibe',vibeOn?'1':'0'); }catch(e){}
+    this.classList.toggle('on',vibeOn);
+    if(vibeOn) vibe(30);
+  };
+  $('tgLang').onclick=function(){
+    setLang(LANG==='en'?'ko':'en');
+    showSettings();   /* 즉시 다시 그려 반영 */
+  };
+}
+/* 진동 */
+let vibeOn=true;
+try{ vibeOn=localStorage.getItem('animaltile.vibe')!=='0'; }catch(e){}
+function vibe(ms){ if(vibeOn&&navigator.vibrate) try{ navigator.vibrate(ms); }catch(e){} }
 
 /* ══ 리더보드 (서버 API) ══ */
 const API='https://oil-war-game.onrender.com/api/leaderboard';
@@ -1555,17 +2413,17 @@ function escapeHTML(s){
 function lbHTML(highlightId){
   if(!lbCache.length){
     return '<div class="lbEmpty">'+(lbState==='offline'
-      ? '서버에 연결하지 못했습니다.<br>잠시 후 다시 시도해 주세요.'
-      : '아직 기록이 없습니다.')+'</div>';
+      ? T('offlineMsg')
+      : T('noRecords'))+'</div>';
   }
   const medal=['🥇','🥈','🥉'];
-  const stale=(lbState==='offline')?'<div class="lbNote">저장된 최근 순위입니다 (오프라인)</div>':'';
+  const stale=(lbState==='offline')?'<div class="lbNote">'+T('offlineNote')+'</div>':'';
   return stale+'<div class="lb">'+lbCache.map(function(e,i){
     return '<div class="lbRow'+(i<3?' top'+(i+1):'')+(e.id===highlightId?' me':'')+'">'+
       '<span class="rk">'+(medal[i]||(i+1))+'</span>'+
       '<span class="nm">'+escapeHTML(e.name)+'</span>'+
       '<span class="sc">'+e.score.toLocaleString()+'</span>'+
-      '<span class="lv">'+e.level+'단계</span></div>';
+      '<span class="lv">'+T('stageUnit',{n:e.level})+'</span></div>';
   }).join('')+'</div>';
 }
 function qualifies(sc){
@@ -1575,17 +2433,17 @@ function qualifies(sc){
 }
 async function showBoard(){
   const wasPlaying=playing; playing=false;
-  card.innerHTML='<h2>순위표 🏆</h2><p class="loadNote">불러오는 중...<br><span class="tiny">서버가 자는 중이면 최대 1분 걸립니다</span></p>';
+  card.innerHTML='<h2>'+T('rankTitle')+'</h2><p class="loadNote">'+T('loading')+'<br><span class="tiny">'+T('loadSlow')+'</span></p>';
   overlay.classList.add('on');
   await fetchLB();
-  card.innerHTML='<h2>순위표 🏆</h2><p>전 세계 상위 '+LB_MAX+'개 기록</p>'+lbHTML(null);
+  card.innerHTML='<h2>'+T('rankTitle')+'</h2><p>'+T('rankSub',{n:LB_MAX})+'</p>'+lbHTML(null);
   const b=document.createElement('button');
-  b.className='btn'; b.textContent='닫기';
+  b.className='btn'; b.textContent=T('close');
   b.onclick=()=>{ overlay.classList.remove('on'); playing=wasPlaying; };
   card.appendChild(b);
   if(lbState==='offline'){
     const g=document.createElement('button');
-    g.className='btn ghost'; g.textContent='다시 시도';
+    g.className='btn ghost'; g.textContent=T('retry');
     g.onclick=showBoard;
     card.appendChild(g);
   }
@@ -1614,7 +2472,7 @@ function startLevel(lv,skipTransition){
 
   if(isBonus){
     bonusCleared=0; bonusEarned=0; updateBonusHUD();
-    $('stageName').textContent='BONUS · 골든 러시';
+    $('stageName').textContent='BONUS · '+T('bonusName');
     const pos=assignBonusSymbols(buildBonusPositions());
     tiles=pos.map((p,i)=>({id:i,x:p.x,y:p.y,layer:0,sym:p.sym,where:'board',el:null,face:null}));
     timeLeft=BONUS_TIME;
@@ -1638,10 +2496,12 @@ function startLevel(lv,skipTransition){
     timeLeft--; tick();
     if(timeLeft===10||timeLeft===5||timeLeft===3) tone(880,.1,'square',.06);
     if(timeLeft<=0){
-      if(isBonus) bonusEnd('시간 종료');
-      else lose('시간이 끝났습니다');
+      if(isBonus) bonusEnd(T('bonusTimeUp'));
+      else lose(T('timeUp'));
     }
   },1000);
+  /* 첫 실행이면 튜토리얼 */
+  if(lv===1 && !tutorDone) setTimeout(startTutor,420);
 }
 function tick(){
   $('hudTime').textContent=Math.floor(timeLeft/60)+':'+String(timeLeft%60).padStart(2,'0');
@@ -1669,6 +2529,7 @@ function bonusEnd(reason){
   $('comboWrap').classList.remove('on');
   saveBest();
 
+  if(level+1>progress.lv){ progress.lv=level+1; saveProgress(); }
   const allClear=tiles.every(t=>t.where==='gone');
   const clearBonus=allClear?1000+level*100:0;
   score+=clearBonus;
@@ -1676,23 +2537,25 @@ function bonusEnd(reason){
 
   if(allClear){ sWin(); fireworks(); } else { sStage(); }
   confettiRain(60);
+  const gotCoins=earnCoins(stageCoins(false,true)+(allClear?15:0));
 
   setTimeout(()=>{
     const nextLv=level+1;
     card.innerHTML=
-      '<h2>'+(allClear?'🌟 완전 정리!':'골든 러시 종료')+'</h2>'+
+      '<h2>'+(allClear?T('bonusAllClear'):T('bonusEndT'))+'</h2>'+
       '<p>'+reason+'</p>'+
-      '<div class="bonusTotal"><b>+'+(bonusEarned+clearBonus).toLocaleString()+'</b><span>보너스 획득 점수</span></div>'+
+      '<div class="bonusTotal"><b>+'+(bonusEarned+clearBonus).toLocaleString()+'</b><span>'+T('bonusEarned')+'</span></div>'+
       '<div class="tally">'+
-        '<div class="tallyRow"><span class="lab">없앤 조합</span><span class="val">'+bonusCleared+'</span></div>'+
-        '<div class="tallyRow"><span class="lab">러시 점수 (x'+BONUS_MULT+')</span><span class="val">+'+bonusEarned.toLocaleString()+'</span></div>'+
-        (allClear?'<div class="tallyRow"><span class="lab">전부 정리</span><span class="val">+'+clearBonus.toLocaleString()+'</span></div>':'')+
-        '<div class="tallyRow total"><span class="lab">총점</span><span class="val">'+score.toLocaleString()+'</span></div>'+
+        '<div class="tallyRow"><span class="lab">'+T('clearedSets')+'</span><span class="val">'+bonusCleared+'</span></div>'+
+        '<div class="tallyRow"><span class="lab">'+T('rushScore',{n:BONUS_MULT})+'</span><span class="val">+'+bonusEarned.toLocaleString()+'</span></div>'+
+        (allClear?'<div class="tallyRow"><span class="lab">'+T('allTidy')+'</span><span class="val">+'+clearBonus.toLocaleString()+'</span></div>':'')+
+        '<div class="tallyRow total"><span class="lab">'+T('total')+'</span><span class="val">'+score.toLocaleString()+'</span></div>'+
       '</div>'+
+      '<div class="earnRow"><span>'+T('gotCoins')+'</span><span class="v">🪙 +'+gotCoins+' ('+T('held',{n:coins.toLocaleString()})+')</span></div>'+
       mapHTML(nextLv)+
-      '<div class="rewardRow">되돌리기 <em>+1</em><span>·</span>섞기 <em>+1</em><span>·</span>꺼내기 <em>+1</em></div>';
+      '<div class="rewardRow">'+T('rewardUndo')+' <em>+1</em><span>·</span>'+T('rewardShuffle')+' <em>+1</em><span>·</span>'+T('rewardPull')+' <em>+1</em></div>';
     const b=document.createElement('button');
-    b.className='btn'; b.textContent=stageName(nextLv)+' 으로';
+    b.className='btn'; b.textContent=T('toStage',{s:stageName(nextLv)});
     b.onclick=()=>{
       overlay.classList.remove('on');
       items.undo++; items.shuffle++; items.pull++;
@@ -1711,26 +2574,24 @@ function bonusEnd(reason){
 function showActCard(act,base,timeBonus,perfectBonus,completeBonus){
   const nextLv=level+1;
   card.innerHTML=
-    '<h2>🏅 '+act+'막 완주</h2>'+
-    '<p>'+ACT_LENGTH*act+'단계까지 도달했습니다</p>'+
+    '<h2>'+T('actComplete',{n:act})+'</h2>'+
+    '<p>'+T('actReached',{n:ACT_LENGTH*act})+'</p>'+
     '<div class="actBadge">'+
       '<span class="big">'+actTitle(act)+'</span>'+
-      '<span class="sm">칭호 획득</span>'+
+      '<span class="sm">'+T('titleGot')+'</span>'+
     '</div>'+
     '<div class="tally">'+
-      '<div class="tallyRow"><span class="lab">기본 점수</span><span class="val">'+base.toLocaleString()+'</span></div>'+
-      '<div class="tallyRow"><span class="lab">남은 시간</span><span class="val">+'+timeBonus.toLocaleString()+'</span></div>'+
-      (perfectBonus?'<div class="tallyRow"><span class="lab">완벽 클리어</span><span class="val">+'+perfectBonus.toLocaleString()+'</span></div>':'')+
-      '<div class="tallyRow"><span class="lab">'+act+'막 완주 보상</span><span class="val">+'+completeBonus.toLocaleString()+'</span></div>'+
-      '<div class="tallyRow total"><span class="lab">총점</span><span class="val">'+score.toLocaleString()+'</span></div>'+
+      '<div class="tallyRow"><span class="lab">'+T('baseScore')+'</span><span class="val">'+base.toLocaleString()+'</span></div>'+
+      '<div class="tallyRow"><span class="lab">'+T('timeBonusL',{t:''})+'</span><span class="val">+'+timeBonus.toLocaleString()+'</span></div>'+
+      (perfectBonus?'<div class="tallyRow"><span class="lab">'+T('clearPerfect')+'</span><span class="val">+'+perfectBonus.toLocaleString()+'</span></div>':'')+
+      '<div class="tallyRow"><span class="lab">'+T('actBonus',{n:act})+'</span><span class="val">+'+completeBonus.toLocaleString()+'</span></div>'+
+      '<div class="tallyRow total"><span class="lab">'+T('total')+'</span><span class="val">'+score.toLocaleString()+'</span></div>'+
     '</div>'+
-    '<div class="actNext">'+
-      '<b>'+(act+1)+'막</b>이 열립니다<br>'+
-      '제한시간 더 짧게 · 받침 5칸 유지<br>아이템을 모두 채워 드립니다'+
-    '</div>';
+    '<div class="earnRow"><span>'+T('actCoins')+'</span><span class="v">🪙 +'+(100+act*50)+' ('+T('held',{n:coins.toLocaleString()})+')</span></div>'+
+    '<div class="actNext">'+T('actNextOpen',{n:act+1})+'</div>';
 
   const go=document.createElement('button');
-  go.className='btn'; go.textContent=(act+1)+'막 계속하기';
+  go.className='btn'; go.textContent=T('actContinue',{n:act+1});
   go.onclick=()=>{
     overlay.classList.remove('on');
     items={undo:5,shuffle:5,pull:3};   /* 새 막 시작 시 아이템 보충 */
@@ -1741,8 +2602,8 @@ function showActCard(act,base,timeBonus,perfectBonus,completeBonus){
 
   /* 여기서 멈추고 점수를 리더보드에 올리는 선택지 */
   const stop=document.createElement('button');
-  stop.className='btn ghost'; stop.textContent='여기서 마치고 기록 남기기';
-  stop.onclick=()=>{ overlay.classList.remove('on'); lose(act+'막 완주'); };
+  stop.className='btn ghost'; stop.textContent=T('stopHere');
+  stop.onclick=()=>{ overlay.classList.remove('on'); lose(T('actDone',{n:act})); };
   card.appendChild(stop);
 
   overlay.classList.add('on');
@@ -1754,6 +2615,7 @@ function win(){
   BGM.duck(2200);
   $('comboWrap').classList.remove('on');
 
+  const gotStars=recordStage(level,timeLeft);
   const timeBonus=timeLeft*2;
   const perfect=(timeLeft>=levelTime(level)*0.5);  /* 절반 이상 남기면 완벽 클리어 */
   const perfectBonus=perfect?500+level*50:0;
@@ -1774,6 +2636,7 @@ function win(){
       actsCleared=act;
       try{ localStorage.setItem('animaltile.acts',String(actsCleared)); }catch(e){}
     }
+    earnCoins(100+act*50);
     setTimeout(()=>{ sEnding(); endingSequence(act,()=>showActCard(act,base,timeBonus,perfectBonus,completeBonus)); },900);
     return;
   }
@@ -1783,28 +2646,33 @@ function win(){
     const nextLv=level+1;
     const nextIsBonus=isBonusLevel(nextLv);
     const nx=stageTier(nextLv);
-    const rewards=perfect?'<div class="rewardRow">되돌리기 <em>+2</em><span>·</span>섞기 <em>+2</em><span>·</span>꺼내기 <em>+1</em></div>'
-                        :'<div class="rewardRow">되돌리기 <em>+1</em><span>·</span>섞기 <em>+1</em></div>';
+    const rewards=perfect
+      ?'<div class="rewardRow">'+T('rewardUndo')+' <em>+2</em><span>·</span>'+T('rewardShuffle')+' <em>+2</em><span>·</span>'+T('rewardPull')+' <em>+1</em></div>'
+      :'<div class="rewardRow">'+T('rewardUndo')+' <em>+1</em><span>·</span>'+T('rewardShuffle')+' <em>+1</em></div>';
+    const gotCoins=earnCoins(stageCoins(perfect,false));
     card.innerHTML=
-      '<h2>'+(perfect?'⭐ 완벽 클리어':'단계 '+level+' 클리어')+'</h2>'+
+      '<h2>'+(perfect?T('clearPerfect'):T('clearNormal',{n:level}))+'</h2>'+
       '<p>'+stageName(level)+'</p>'+
+      '<div class="progStars" style="justify-content:center;font-size:26px;margin-bottom:12px">'+
+        [1,2,3].map(i=>'<span class="s'+(i<=gotStars?' on':'')+'">★</span>').join('')+'</div>'+
       '<div class="tally">'+
-        '<div class="tallyRow"><span class="lab">기본 점수</span><span class="val">'+base.toLocaleString()+'</span></div>'+
-        '<div class="tallyRow"><span class="lab">남은 시간 '+Math.floor(timeLeft/60)+':'+String(timeLeft%60).padStart(2,'0')+'</span><span class="val">+'+timeBonus.toLocaleString()+'</span></div>'+
-        (perfect?'<div class="tallyRow"><span class="lab">시간 절반 이상 남김</span><span class="val">+'+perfectBonus.toLocaleString()+'</span></div>':'')+
-        '<div class="tallyRow total"><span class="lab">총점</span><span class="val">'+score.toLocaleString()+'</span></div>'+
+        '<div class="tallyRow"><span class="lab">'+T('baseScore')+'</span><span class="val">'+base.toLocaleString()+'</span></div>'+
+        '<div class="tallyRow"><span class="lab">'+T('timeBonusL',{t:Math.floor(timeLeft/60)+':'+String(timeLeft%60).padStart(2,'0')})+'</span><span class="val">+'+timeBonus.toLocaleString()+'</span></div>'+
+        (perfect?'<div class="tallyRow"><span class="lab">'+T('perfectBonusL')+'</span><span class="val">+'+perfectBonus.toLocaleString()+'</span></div>':'')+
+        '<div class="tallyRow total"><span class="lab">'+T('total')+'</span><span class="val">'+score.toLocaleString()+'</span></div>'+
       '</div>'+
+      '<div class="earnRow"><span>'+T('gotCoins')+'</span><span class="v">🪙 +'+gotCoins+' ('+T('held',{n:coins.toLocaleString()})+')</span></div>'+
       rewards+
       mapHTML(nextLv)+
       (nextIsBonus
-        ? '<div class="bonusTotal"><b>🌟 BONUS</b><span>다음은 골든 러시 · 점수 '+BONUS_MULT+'배</span></div>'
+        ? '<div class="bonusTotal"><b>🌟 BONUS</b><span>'+T('bonusNext',{n:BONUS_MULT})+'</span></div>'
         : '<div class="nextInfo">'+
-            '<div><b>'+nextLv+'</b><span>다음 단계</span></div>'+
-            '<div><b>'+nx.layers+'</b><span>층</span></div>'+
-            '<div><b>'+nx.kinds+'</b><span>종류</span></div>'+
+            '<div><b>'+nextLv+'</b><span>'+T('nextStage')+'</span></div>'+
+            '<div><b>'+nx.layers+'</b><span>'+T('layers')+'</span></div>'+
+            '<div><b>'+nx.kinds+'</b><span>'+T('kinds')+'</span></div>'+
           '</div>');
     const b=document.createElement('button');
-    b.className='btn'; b.textContent=nextIsBonus?'골든 러시 시작':(stageName(nextLv)+' 으로');
+    b.className='btn'; b.textContent=nextIsBonus?T('bonusName'):T('toStage',{s:stageName(nextLv)});
     b.onclick=()=>{
       overlay.classList.remove('on');
       if(perfect){ items.undo+=2; items.shuffle+=2; items.pull+=1; }
@@ -1823,40 +2691,58 @@ function win(){
   },1300);
 }
 function lose(reason){
-  playing=false; clearInterval(timerId); saveBest(); sLose();
-  BGM.stop();
+  playing=false; clearInterval(timerId);
+  BGM.duck(2000);
+  $('comboWrap').classList.remove('on');
+
+  /* 부활 기회를 먼저 제안한다 — 판당 최대 2회, 보너스 판은 제외 */
+  if(!isBonus && revivesUsed<2 && coins>=reviveCost()){
+    sLose();
+    offerRevive(reason,()=>finalLose(reason));
+    return;
+  }
+  finalLose(reason);
+}
+
+function finalLose(reason){
+  playing=false; clearInterval(timerId); clearInterval(reviveTimer);
+  saveBest(); sLose(); BGM.stop();
   $('comboWrap').classList.remove('on');
 
   if(qualifies(score)){
     let lastName=''; try{ lastName=localStorage.getItem('animaltile.name')||''; }catch(e){}
-    card.innerHTML='<h2>신기록 등록</h2><p>'+reason+'.<br>'+level+'단계 · <b>'+score.toLocaleString()+'점</b><br>순위표에 오를 점수입니다!</p>';
+    card.innerHTML='<h2>'+T('newRecord')+'</h2><p>'+reason+'<br>'+T('stageUnit',{n:level})+' · <b>'+score.toLocaleString()+'</b><br>'+T('willRank')+'</p>';
     const row=document.createElement('div'); row.className='nameRow';
     const inp=document.createElement('input');
-    inp.type='text'; inp.maxLength=12; inp.placeholder='이름 (최대 12자)'; inp.value=lastName;
-    const sv=document.createElement('button'); sv.textContent='등록';
+    inp.type='text'; inp.maxLength=12; inp.placeholder=T('namePlace'); inp.value=lastName;
+    const sv=document.createElement('button'); sv.textContent=T('submit');
     row.appendChild(inp); row.appendChild(sv); card.appendChild(row);
 
     const skip=document.createElement('button');
-    skip.className='btn ghost'; skip.textContent='등록 없이 다시 하기';
+    skip.className='btn ghost'; skip.textContent=T('skipReg');
     skip.onclick=()=>{ overlay.classList.remove('on'); restart(); };
 
     const submit=async()=>{
-      sv.disabled=true; sv.textContent='등록 중...';
-      const nm=inp.value.trim()||'익명';
+      sv.disabled=true; sv.textContent=T('submitting');
+      const nm=inp.value.trim()||T('anon');
       try{ localStorage.setItem('animaltile.name',nm); }catch(e){}
       try{
         const res=await postLB(nm,score,level);
         await fetchLB();
-        card.innerHTML='<h2>'+(res.rank<=3?'🏆 ':'')+res.rank+'위 등록!</h2>'+
-          '<p>'+escapeHTML(nm)+' · '+score.toLocaleString()+'점</p>'+lbHTML(res.entry.id);
+        card.innerHTML='<h2>'+(res.rank<=3?'🏆 ':'')+T('rankedAt',{n:res.rank})+'</h2>'+
+          '<p>'+escapeHTML(nm)+' · '+score.toLocaleString()+T('pts')+'</p>'+lbHTML(res.entry.id);
         if(res.rank<=3){ confettiRain(70); sWin(); }
       }catch(e){
-        card.innerHTML='<h2>등록 실패</h2><p>서버 연결 문제입니다.<br>점수: <b>'+score.toLocaleString()+'점</b></p>';
+        card.innerHTML='<h2>'+T('regFail')+'</h2><p>'+T('regFailMsg',{n:score.toLocaleString()})+'</p>';
       }
       const b=document.createElement('button');
-      b.className='btn'; b.textContent='다시 하기';
+      b.className='btn'; b.textContent=T('playAgain');
       b.onclick=()=>{ overlay.classList.remove('on'); restart(); };
       card.appendChild(b);
+      const h2=document.createElement('button');
+      h2.className='btn ghost'; h2.textContent=T('home');
+      h2.onclick=()=>{ overlay.classList.remove('on'); openHome(); };
+      card.appendChild(h2);
       setTimeout(()=>b.focus(),30);
     };
     sv.onclick=submit;
@@ -1867,12 +2753,18 @@ function lose(reason){
     return;
   }
 
-  const gap=lbCache.length>=LB_MAX?('<br>'+LB_MAX+'위까지 '+(lbCache[LB_MAX-1].score-score).toLocaleString()+'점 부족'):'';
-  show('게임 종료',reason+'.<br>'+level+'단계 · <b>'+score.toLocaleString()+'점</b>'+gap,
-    '다시 하기',restart,false);
+  const gap=lbCache.length>=LB_MAX?T('shortBy',{m:LB_MAX,n:(lbCache[LB_MAX-1].score-score).toLocaleString()}):'';
+  show(T('gameOver'),reason+'<br>'+T('stageUnit',{n:level})+' · <b>'+score.toLocaleString()+'</b>'+gap,
+    T('playAgain'),restart,false);
+  const hb=document.createElement('button');
+  hb.className='btn ghost'; hb.textContent=T('home');
+  hb.onclick=()=>{ overlay.classList.remove('on'); openHome(); };
+  card.appendChild(hb);
 }
 function restart(){
-  score=0; combo=0; lastMatchAt=0;
+  score=0; combo=0; lastMatchAt=0; revivesUsed=0;
+  clearInterval(reviveTimer);
+  closeHome();
   isBonus=false; bonusCleared=0; bonusEarned=0;
   document.body.classList.remove('bonus');
   $('bonusBar').classList.remove('on');
@@ -1883,9 +2775,9 @@ function show(title,body,btnText,onClick,withPicker){
   card.innerHTML='<h2>'+title+'</h2><p>'+body+'</p>';
   if(withPicker){
     const wrap=document.createElement('div'); wrap.className='pick';
-    [['sky','새벽 하늘','linear-gradient(140deg,#EAF4FD,#8FBADD)'],
-     ['meadow','봄 들판','linear-gradient(140deg,#F3FAE9,#A9D398)'],
-     ['moon','달빛 밤','linear-gradient(140deg,#33507E,#0B1220)']].forEach(function(o){
+    [['sky',T('themeSky'),'linear-gradient(140deg,#EAF4FD,#8FBADD)'],
+     ['meadow',T('themeMeadow'),'linear-gradient(140deg,#F3FAE9,#A9D398)'],
+     ['moon',T('themeMoon'),'linear-gradient(140deg,#33507E,#0B1220)']].forEach(function(o){
       const b=document.createElement('button');
       b.dataset.t=o[0]; b.innerHTML='<i style="background:'+o[2]+'"></i>'+o[1];
       b.onclick=()=>setTheme(o[0]);
@@ -1905,12 +2797,12 @@ $('btnUndo').onclick=useUndo;
 $('btnShuffle').onclick=useShuffle;
 $('btnPull').onclick=usePull;
 
-show('동물 타일매치',
-  '위에 덮인 타일은 고를 수 없습니다.<br>같은 동물 <b>3마리</b>를 모으면 타일이 부서집니다.<br>5단계마다 <b>🌟 골든 러시</b>, 20단계마다 <b>👑 막 완주</b>.'+
-  (actsCleared?'<br><br>👑 획득 칭호 · '+actTitle(actsCleared):'')+
-  (lbCache.length?'<br>🏆 1위 '+escapeHTML(lbCache[0].name)+' · '+lbCache[0].score.toLocaleString()+'점':''),
-  '시작하기',()=>startLevel(1),true);
+/* 첫 진입 — 언어 적용 후 홈 화면 */
+document.documentElement.lang=LANG;
+applyStaticText();
+openHome();
 })();
 </script>
+<script>if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});</script>
 </body>
 </html>
