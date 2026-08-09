@@ -329,6 +329,132 @@ body.bonus .stat,body.bonus .tool{background:#FFFFFFB3;border-color:#C98F2E55}
 }
 .bonusTotal b{display:block;font-family:'Gowun Batang',serif;font-size:30px;color:#7A4E12;line-height:1.1}
 .bonusTotal span{font-size:11px;letter-spacing:.18em;color:#8A6320}
+
+/* ══ 스테이지 맵 (윷놀이 말판) ══ */
+#mapWrap{
+  margin:0 0 16px;padding:14px 10px 10px;border-radius:14px;
+  background:var(--chip);border:1px solid var(--line);
+  position:relative;overflow:hidden;
+}
+.mapTitle{
+  font-size:10.5px;letter-spacing:.22em;color:var(--dim);
+  text-align:center;margin-bottom:12px;
+}
+.mapGrid{
+  display:grid;grid-template-columns:repeat(5,1fr);
+  gap:9px 6px;position:relative;
+}
+/* 경로 연결선 */
+.mapGrid::before{
+  content:"";position:absolute;inset:14px 12px;
+  border-radius:16px;pointer-events:none;
+}
+.node{
+  position:relative;aspect-ratio:1;border-radius:11px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  background:var(--chip);border:1.5px solid var(--line);
+  font-family:'Gowun Batang',serif;font-size:13px;font-weight:700;
+  color:var(--dim);transition:transform .2s ease;
+}
+/* 칸 사이 잇는 점선 */
+.node::after{
+  content:"";position:absolute;right:-6px;top:50%;width:6px;height:1.5px;
+  background:var(--line);
+}
+.node.rowEnd::after{
+  right:auto;left:50%;top:auto;bottom:-9px;width:1.5px;height:9px;
+}
+.node.last::after{display:none}
+/* 지나온 칸 */
+.node.done{
+  background:var(--good);border-color:var(--good);color:#fff;
+}
+.node.done .mark{font-size:15px}
+/* 현재 칸 */
+.node.now{
+  background:var(--accent);border-color:var(--accent);color:#fff;
+  transform:scale(1.16);z-index:2;
+  box-shadow:0 0 0 3px var(--panel),0 4px 12px #0004;
+  animation:nowPulse 1.5s ease-in-out infinite alternate;
+}
+@keyframes nowPulse{
+  from{box-shadow:0 0 0 3px var(--panel),0 4px 12px #0004}
+  to{box-shadow:0 0 0 3px var(--panel),0 4px 12px #0004,0 0 18px 3px var(--accent)}
+}
+/* 보너스 칸 */
+.node.bonusNode{
+  background:linear-gradient(140deg,#FFE9A8,#FFD166);
+  border-color:#C98F2E;color:#7A4E12;font-size:17px;
+}
+.node.bonusNode.done{background:linear-gradient(140deg,#F0C97A,#D8A93C)}
+.node.bonusNode.now{
+  transform:scale(1.2);
+  box-shadow:0 0 0 3px var(--panel),0 0 20px 4px #FFD166;
+}
+/* 막 마지막 칸 */
+.node.finale{
+  background:linear-gradient(140deg,#C9A9F0,#9B7BD4);
+  border-color:#7A5CB8;color:#fff;font-size:16px;
+}
+.node.finale.done{background:linear-gradient(140deg,#A98FD0,#7A5CB8)}
+.node.finale.now{transform:scale(1.2);box-shadow:0 0 0 3px var(--panel),0 0 20px 4px #9B7BD4}
+/* 아직 안 간 칸 */
+.node.todo{opacity:.5}
+.node .lv{font-size:12px;line-height:1}
+.node .tag{font-size:7.5px;letter-spacing:.06em;margin-top:2px;opacity:.85;font-weight:400}
+/* 남은 판 수 안내 */
+.mapHint{
+  margin-top:11px;text-align:center;font-size:12px;color:var(--dim);
+}
+.mapHint b{color:var(--spark2);font-family:'Gowun Batang',serif;font-size:15px}
+/* 지도 보기 버튼 */
+#btnMap{
+  width:24px;height:19px;border:none;background:none;cursor:pointer;font-size:13px;
+  color:var(--dim);padding:0;line-height:1;
+}
+
+/* ══ 막 완주 엔딩 ══ */
+.endingWrap{
+  position:absolute;left:50%;top:44%;text-align:center;
+  font-family:'Gowun Batang',serif;opacity:0;
+  animation:endIn 3.4s ease-out forwards;
+}
+.endingWrap .crown{font-size:52px;line-height:1;margin-bottom:10px;
+  filter:drop-shadow(0 0 22px var(--spark1))}
+.endingWrap .k{font-size:12px;letter-spacing:.5em;color:var(--spark1);margin-bottom:8px}
+.endingWrap .n{
+  font-size:38px;font-weight:700;line-height:1.25;color:var(--text);
+  text-shadow:0 3px 0 #00000033,0 0 36px var(--spark1);
+}
+.endingWrap .s{font-size:13px;letter-spacing:.14em;color:var(--dim);margin-top:12px;line-height:1.8}
+@keyframes endIn{
+  0%,8%{opacity:0;transform:translate(-50%,-50%) scale(.7)}
+  20%{opacity:1;transform:translate(-50%,-50%) scale(1.08)}
+  28%,80%{opacity:1;transform:translate(-50%,-50%) scale(1)}
+  100%{opacity:0;transform:translate(-50%,-50%) scale(1.04)}
+}
+/* 엔딩 배경 — 서서히 밝아지는 빛 */
+.endingGlow{
+  position:absolute;inset:0;
+  background:radial-gradient(circle at 50% 44%,var(--spark1),transparent 62%);
+  opacity:0;animation:glowIn 3.4s ease-out forwards;
+}
+@keyframes glowIn{0%{opacity:0}22%{opacity:.5}72%{opacity:.45}100%{opacity:0}}
+/* 완주 배지 */
+.actBadge{
+  padding:16px;border-radius:14px;margin:0 0 14px;text-align:center;
+  background:linear-gradient(135deg,var(--spark1),var(--spark2));
+  border:1px solid #ffffff44;color:#3A2A0E;
+}
+.actBadge .big{display:block;font-family:'Gowun Batang',serif;font-size:26px;line-height:1.2;margin-bottom:4px}
+.actBadge .sm{font-size:11px;letter-spacing:.16em;opacity:.85}
+/* 새 막 안내 */
+.actNext{
+  padding:11px;border-radius:11px;margin:0 0 14px;
+  background:var(--chip);border:1px dashed var(--line);
+  font-size:12.5px;color:var(--dim);line-height:1.7;
+}
+.actNext b{color:var(--text);font-family:'Gowun Batang',serif;font-size:14px}
 .nameRow{display:flex;gap:7px;margin-bottom:14px}
 .nameRow input{
   flex:1;padding:11px 12px;border-radius:11px;border:1px solid var(--line);
@@ -358,6 +484,7 @@ body.bonus .stat,body.bonus .tool{background:#FFFFFFB3;border-color:#C98F2E55}
 .card{
   width:100%;max-width:330px;padding:26px 22px;border-radius:18px;text-align:center;
   background:var(--panel);border:1px solid var(--line);box-shadow:0 20px 50px #0000005e;backdrop-filter:blur(8px);
+  max-height:88vh;overflow-y:auto;overscroll-behavior:contain;
 }
 .card h2{font-family:'Gowun Batang',serif;font-size:23px;margin:0 0 6px}
 .card p{font-size:13px;line-height:1.7;color:var(--dim);margin:0 0 16px}
@@ -385,6 +512,7 @@ body.bonus .stat,body.bonus .tool{background:#FFFFFFB3;border-color:#C98F2E55}
         <button class="swatch sw-moon" data-t="moon" title="달빛 밤" aria-label="달빛 밤 테마"></button>
         <button id="btnSound" title="효과음 켜기/끄기" aria-label="효과음 켜기 끄기">🔊</button>
         <button id="btnMusic" title="배경음악 켜기/끄기" aria-label="배경음악 켜기 끄기">🎵</button>
+        <button id="btnMap" title="스테이지 지도" aria-label="스테이지 지도 보기">🗺️</button>
         <button id="btnBoard" title="순위표" aria-label="순위표 보기">🏆</button>
       </div>
     </div>
@@ -429,7 +557,8 @@ body.bonus .stat,body.bonus .tool{background:#FFFFFFB3;border-color:#C98F2E55}
 "use strict";
 
 const ANIMALS=['🐶','🐱','🐰','🐻','🐼','🦊','🐨','🐯','🦁','🐷','🐸','🐵','🐧','🐥','🦉','🐹'];
-const TW=54,TH=62,HX=TW/2,HY=TH/2,COLS=11,ROWS=8,TRAY_MAX=7,LEVEL_TIME=300;
+const TW=54,TH=62,HX=TW/2,HY=TH/2,COLS=11,ROWS=8,TRAY_CAP=7,LEVEL_TIME=300;
+let TRAY_MAX=7; /* 단계에 따라 7→6→5로 줄어든다 */
 const REDUCED=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 const $=id=>document.getElementById(id);
@@ -832,8 +961,8 @@ function jolt(){ if(REDUCED) return; appEl.classList.remove('jolt'); void appEl.
 /* ══ 보드 생성 ══ */
 function overlaps(a,b){ return Math.abs(a.x-b.x)<TW && Math.abs(a.y-b.y)<TH; }
 function buildPositions(lv){
-  const layers=Math.min(5,2+Math.ceil(lv/2));
-  const need=(12+(lv-1)*3)*3;
+  const layers=layerCount(lv);
+  const need=tileGoal(lv);
   const w=[]; for(let l=0;l<layers;l++) w.push(layers-l);
   const ws=w.reduce((a,b)=>a+b,0);
   const quota=w.map(x=>Math.max(3,Math.round(need*x/ws)));
@@ -900,6 +1029,7 @@ function drawTray(popIndex){
   const counts={};
   tray.forEach(x=>counts[x.sym]=(counts[x.sym]||0)+1);
   trayEl.innerHTML='';
+  trayEl.style.gridTemplateColumns='repeat('+TRAY_MAX+',1fr)';
   for(let i=0;i<TRAY_MAX;i++){
     const slot=document.createElement('div'); slot.className='slot';
     if(tray[i]){
@@ -1053,8 +1183,47 @@ function updateItems(){
    5스테이지마다 등장. 층 없이 평면으로만 깔려서 모든 타일을 바로 집을 수 있다.
    45초 안에 최대한 많이 없애는 점수 벌이 판. 실패 개념이 없다(받침이 차면 종료되고 정산). */
 const BONUS_EVERY=5, BONUS_TIME=45, BONUS_MULT=3;
+
+/* ══ 난이도 곡선 ══
+   화면(11×8 격자)이 물리적으로 60장 남짓밖에 수용하지 못하므로,
+   타일 수만 늘리면 6단계쯤에서 포화되어 난이도가 멈춘다.
+   따라서 실제로 조여지는 축을 셋으로 나눈다:
+     1) 제한시간 — 300초에서 단계마다 줄여 최소 150초
+     2) 받침 칸  — 7칸에서 구간별로 줄여 최소 5칸
+     3) 판 밀도  — 층수를 단계별로 올림
+   보너스 스테이지는 이 조임에서 제외된다. */
+function levelTime(lv){
+  if(isBonusLevel(lv)) return BONUS_TIME;
+  /* 막의 마지막은 보스전 — 가장 빡빡한 시간 */
+  if(isActFinale(lv)) return Math.max(140, 240-actOf(lv)*20);
+  return Math.max(150, 300-(lv-1)*8);
+}
+function trayMax(lv){
+  if(isBonusLevel(lv)) return 7;
+  if(isActFinale(lv)) return 5;
+  if(lv>=16) return 5;
+  if(lv>=9)  return 6;
+  return 7;
+}
+function layerCount(lv){
+  if(lv>=13) return 5;
+  if(lv>=9)  return 4;
+  if(lv>=4)  return 3;
+  return 2;
+}
+function tileGoal(lv){
+  return Math.min(57, 30+(lv-1)*3);
+}
+
+/* ══ 막(Act) — 20단계가 1막 ══ */
+const ACT_LENGTH=20;
+function actOf(lv){ return Math.floor((lv-1)/ACT_LENGTH)+1; }
+function isActFinale(lv){ return lv%ACT_LENGTH===0; }
+
 let isBonus=false, bonusCleared=0, bonusEarned=0;
-function isBonusLevel(lv){ return lv%BONUS_EVERY===0; }
+/* 20단계는 5의 배수이기도 하므로 보너스와 겹친다.
+   막의 마지막은 반드시 정규 스테이지여야 엔딩이 나오므로 보너스에서 제외한다. */
+function isBonusLevel(lv){ return lv%BONUS_EVERY===0 && lv%ACT_LENGTH!==0; }
 
 /* 평면 격자로 촘촘히 채운다 — 층이 없으니 전부 free */
 function buildBonusPositions(){
@@ -1100,6 +1269,110 @@ function updateBonusHUD(){
   $('bonusCleared').textContent=bonusCleared;
   $('bonusMult').textContent='x'+BONUS_MULT;
 }
+
+/* ══ 막 완주 엔딩 ══ */
+const ACT_TITLES=['달빛 여행자','숲의 수호자','별을 세는 이','꿈의 문지기'];
+function actTitle(a){ return ACT_TITLES[(a-1)%ACT_TITLES.length]; }
+let actsCleared=0;
+try{ actsCleared=parseInt(localStorage.getItem('animaltile.acts')||'0',10)||0; }catch(e){}
+
+function endingSequence(act,done){
+  if(REDUCED){ done&&done(); return; }
+  const fxEl=$('stageFX');
+  fxEl.innerHTML=
+    '<div class="endingGlow"></div>'+
+    '<div class="endingWrap">'+
+      '<div class="crown">👑</div>'+
+      '<div class="k">ACT '+act+' COMPLETE</div>'+
+      '<div class="n">'+ACT_LENGTH+'단계<br>완주</div>'+
+      '<div class="s">칭호 획득 · '+actTitle(act)+'</div>'+
+    '</div>';
+  fxEl.classList.add('on');
+  /* 폭죽을 길게 터뜨린다 */
+  let n=0;
+  const iv=setInterval(()=>{
+    burst(innerWidth*(.15+Math.random()*.7),innerHeight*(.2+Math.random()*.45),
+          ANIMALS[(Math.random()*ANIMALS.length)|0]);
+    if(++n>13) clearInterval(iv);
+  },200);
+  confettiRain(140);
+  setTimeout(()=>{ fxEl.classList.remove('on'); fxEl.innerHTML=''; done&&done(); },3400);
+}
+function sEnding(){
+  /* 상승하는 팡파레 */
+  const notes=[523,659,784,1046,1319,1568];
+  notes.forEach((f,i)=>tone(f,.55,'triangle',.11,i*.13));
+  [0,.13,.26].forEach(d=>thump(110,.4,.15,d+.78));
+  [523,659,784,1046].forEach(f=>tone(f,1.4,'sine',.07,.78));
+  noise(.6,.05,4200,.78);
+}
+
+/* ══ 스테이지 지도 (윷놀이 말판) ══
+   현재 위치를 중심으로 앞뒤 스테이지를 뱀 모양(좌→우, 우→좌 교대)으로 배치한다.
+   보너스 칸이 어디인지, 몇 판 남았는지 한눈에 보이게 하는 게 목적. */
+const MAP_COLS=5, MAP_ROWS=4;
+function buildMap(currentLv){
+  const total=MAP_COLS*MAP_ROWS;
+  /* 현재 단계가 항상 둘째 줄쯤에 오도록 시작점을 잡는다 */
+  let start=Math.max(1,currentLv-MAP_COLS-1);
+  const cells=[];
+  for(let i=0;i<total;i++) cells.push(start+i);
+
+  /* 뱀 모양: 홀수 줄은 오른쪽→왼쪽으로 뒤집는다 */
+  const rows=[];
+  for(let r=0;r<MAP_ROWS;r++){
+    const row=cells.slice(r*MAP_COLS,(r+1)*MAP_COLS);
+    rows.push(r%2===1?row.slice().reverse():row);
+  }
+  return {rows:rows,flat:cells};
+}
+function mapHTML(currentLv){
+  const m=buildMap(currentLv);
+  let html='<div id="mapWrap"><div class="mapTitle">STAGE MAP</div><div class="mapGrid">';
+  m.rows.forEach(function(row,r){
+    row.forEach(function(lv,c){
+      const bonus=isBonusLevel(lv);
+      const state=lv<currentLv?'done':(lv===currentLv?'now':'todo');
+      /* 줄의 끝 칸은 아래로 이어지는 표시 */
+      const isRowEnd=(c===MAP_COLS-1);
+      const isLast=(r===MAP_ROWS-1&&c===MAP_COLS-1);
+      const cls=['node',state,isActFinale(lv)?'finale':(bonus?'bonusNode':''),isRowEnd?'rowEnd':'',isLast?'last':''].filter(Boolean).join(' ');
+      let inner;
+      if(isActFinale(lv)) inner='<span class="mark">👑</span><span class="tag">'+lv+'</span>';
+      else if(bonus) inner='<span class="mark">🌟</span><span class="tag">BONUS</span>';
+      else if(state==='done') inner='<span class="mark">✓</span><span class="tag">'+lv+'</span>';
+      else inner='<span class="lv">'+lv+'</span>';
+      html+='<div class="'+cls+'">'+inner+'</div>';
+    });
+  });
+  html+='</div>';
+
+  /* 다음 보너스까지 남은 판 수 */
+  const nextBonus=Math.ceil(currentLv/BONUS_EVERY)*BONUS_EVERY;
+  const left=nextBonus-currentLv;
+  if(isBonusLevel(currentLv)){
+    html+='<div class="mapHint">지금이 <b>보너스</b> 스테이지입니다</div>';
+  }else if(left===0){
+    html+='<div class="mapHint">다음이 <b>보너스</b> 스테이지!</div>';
+  }else{
+    html+='<div class="mapHint"><b>'+left+'</b>판 더 깨면 보너스 스테이지</div>';
+  }
+  html+='</div>';
+  return html;
+}
+function showMap(){
+  const wasPlaying=playing; playing=false;
+  card.innerHTML='<h2>스테이지 지도 🗺️</h2><p>'+
+    (isBonusLevel(level)?'BONUS · 골든 러시':stageName(level))+' 진행 중</p>'+
+    mapHTML(level);
+  const b=document.createElement('button');
+  b.className='btn'; b.textContent='닫기';
+  b.onclick=()=>{ overlay.classList.remove('on'); playing=wasPlaying; };
+  card.appendChild(b);
+  overlay.classList.add('on');
+  setTimeout(()=>b.focus(),30);
+}
+$('btnMap').onclick=showMap;
 
 /* ══ 스테이지 정보 ══ */
 const STAGE_NAMES=['새벽 들녘','안개 숲','달맞이 언덕','바람의 계곡','별빛 호수','구름 위 정원','서리 골짜기','노을 절벽','오로라 평원','꿈의 성'];
@@ -1253,6 +1526,7 @@ function roundTransition(lv){
 function startLevel(lv,skipTransition){
   level=lv;
   isBonus=isBonusLevel(lv);
+  TRAY_MAX=trayMax(lv);
   document.body.classList.toggle('bonus',isBonus);
   $('bonusBar').classList.toggle('on',isBonus);
 
@@ -1268,7 +1542,7 @@ function startLevel(lv,skipTransition){
     $('stageName').textContent=stageName(lv);
     const pos=assignSymbols(buildPositions(lv),lv);
     tiles=pos.map((p,i)=>({id:i,x:p.x,y:p.y,layer:p.layer,sym:p.sym,where:'board',el:null,face:null}));
-    timeLeft=LEVEL_TIME;
+    timeLeft=levelTime(lv);
   }
 
   tray=[]; history=[]; clearing=false; playing=true; combo=0; lastMatchAt=0;
@@ -1333,6 +1607,7 @@ function bonusEnd(reason){
         (allClear?'<div class="tallyRow"><span class="lab">전부 정리</span><span class="val">+'+clearBonus.toLocaleString()+'</span></div>':'')+
         '<div class="tallyRow total"><span class="lab">총점</span><span class="val">'+score.toLocaleString()+'</span></div>'+
       '</div>'+
+      mapHTML(nextLv)+
       '<div class="rewardRow">되돌리기 <em>+1</em><span>·</span>섞기 <em>+1</em><span>·</span>꺼내기 <em>+1</em></div>';
     const b=document.createElement('button');
     b.className='btn'; b.textContent=stageName(nextLv)+' 으로';
@@ -1350,13 +1625,55 @@ function bonusEnd(reason){
   },1200);
 }
 
+/* 막 완주 결과 카드 — 계속하기 / 여기서 기록 남기기 선택 */
+function showActCard(act,base,timeBonus,perfectBonus,completeBonus){
+  const nextLv=level+1;
+  card.innerHTML=
+    '<h2>🏅 '+act+'막 완주</h2>'+
+    '<p>'+ACT_LENGTH*act+'단계까지 도달했습니다</p>'+
+    '<div class="actBadge">'+
+      '<span class="big">'+actTitle(act)+'</span>'+
+      '<span class="sm">칭호 획득</span>'+
+    '</div>'+
+    '<div class="tally">'+
+      '<div class="tallyRow"><span class="lab">기본 점수</span><span class="val">'+base.toLocaleString()+'</span></div>'+
+      '<div class="tallyRow"><span class="lab">남은 시간</span><span class="val">+'+timeBonus.toLocaleString()+'</span></div>'+
+      (perfectBonus?'<div class="tallyRow"><span class="lab">완벽 클리어</span><span class="val">+'+perfectBonus.toLocaleString()+'</span></div>':'')+
+      '<div class="tallyRow"><span class="lab">'+act+'막 완주 보상</span><span class="val">+'+completeBonus.toLocaleString()+'</span></div>'+
+      '<div class="tallyRow total"><span class="lab">총점</span><span class="val">'+score.toLocaleString()+'</span></div>'+
+    '</div>'+
+    '<div class="actNext">'+
+      '<b>'+(act+1)+'막</b>이 열립니다<br>'+
+      '제한시간 더 짧게 · 받침 5칸 유지<br>아이템을 모두 채워 드립니다'+
+    '</div>';
+
+  const go=document.createElement('button');
+  go.className='btn'; go.textContent=(act+1)+'막 계속하기';
+  go.onclick=()=>{
+    overlay.classList.remove('on');
+    items={undo:5,shuffle:5,pull:3};   /* 새 막 시작 시 아이템 보충 */
+    sStage();
+    stageIntro(nextLv,()=>startLevel(nextLv,true));
+  };
+  card.appendChild(go);
+
+  /* 여기서 멈추고 점수를 리더보드에 올리는 선택지 */
+  const stop=document.createElement('button');
+  stop.className='btn ghost'; stop.textContent='여기서 마치고 기록 남기기';
+  stop.onclick=()=>{ overlay.classList.remove('on'); lose(act+'막 완주'); };
+  card.appendChild(stop);
+
+  overlay.classList.add('on');
+  setTimeout(()=>go.focus(),30);
+}
+
 function win(){
   playing=false; clearInterval(timerId);
   BGM.duck(2200);
   $('comboWrap').classList.remove('on');
 
   const timeBonus=timeLeft*2;
-  const perfect=(timeLeft>=LEVEL_TIME*0.5);      /* 절반 이상 남기면 완벽 클리어 */
+  const perfect=(timeLeft>=levelTime(level)*0.5);  /* 절반 이상 남기면 완벽 클리어 */
   const perfectBonus=perfect?500+level*50:0;
   const base=score;
   score+=timeBonus+perfectBonus;
@@ -1364,6 +1681,20 @@ function win(){
 
   /* 1) 도장 + 빛 쓸기 + 폭죽 */
   stampClear(); sWin(); fireworks();
+
+  /* 막의 마지막 단계(20, 40…)를 깼다면 엔딩 연출로 분기 */
+  if(isActFinale(level)){
+    const act=actOf(level);
+    const completeBonus=3000+act*1000;
+    score+=completeBonus;
+    saveBest();
+    if(act>actsCleared){
+      actsCleared=act;
+      try{ localStorage.setItem('animaltile.acts',String(actsCleared)); }catch(e){}
+    }
+    setTimeout(()=>{ sEnding(); endingSequence(act,()=>showActCard(act,base,timeBonus,perfectBonus,completeBonus)); },900);
+    return;
+  }
 
   /* 2) 1.3초 뒤 결과 집계 카드 */
   setTimeout(()=>{
@@ -1382,6 +1713,7 @@ function win(){
         '<div class="tallyRow total"><span class="lab">총점</span><span class="val">'+score.toLocaleString()+'</span></div>'+
       '</div>'+
       rewards+
+      mapHTML(nextLv)+
       (nextIsBonus
         ? '<div class="bonusTotal"><b>🌟 BONUS</b><span>다음은 골든 러시 · 점수 '+BONUS_MULT+'배</span></div>'
         : '<div class="nextInfo">'+
@@ -1492,8 +1824,9 @@ $('btnShuffle').onclick=useShuffle;
 $('btnPull').onclick=usePull;
 
 show('동물 타일매치',
-  '위에 덮인 타일은 고를 수 없습니다.<br>같은 동물 <b>3마리</b>를 모으면 타일이 부서집니다.<br>연속으로 맞추면 <b>콤보 배수</b>가 붙습니다.<br>받침 <b>7칸</b>이 다 차면 종료됩니다.'+
-  (lbCache.length?'<br><br>🏆 1위 '+escapeHTML(lbCache[0].name)+' · '+lbCache[0].score.toLocaleString()+'점':''),
+  '위에 덮인 타일은 고를 수 없습니다.<br>같은 동물 <b>3마리</b>를 모으면 타일이 부서집니다.<br>5단계마다 <b>🌟 골든 러시</b>, 20단계마다 <b>👑 막 완주</b>.'+
+  (actsCleared?'<br><br>👑 획득 칭호 · '+actTitle(actsCleared):'')+
+  (lbCache.length?'<br>🏆 1위 '+escapeHTML(lbCache[0].name)+' · '+lbCache[0].score.toLocaleString()+'점':''),
   '시작하기',()=>startLevel(1),true);
 })();
 </script>
