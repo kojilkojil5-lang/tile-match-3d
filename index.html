@@ -2068,29 +2068,28 @@ function offerRevive(reason,onDecline){
 /* 실제 부활 처리 — 받침을 비우고 시간을 조금 돌려준다 */
 function doRevive(){
   revivesUsed++;
+  clearInterval(timerId); clearInterval(reviveTimer);
+  overlay.classList.remove('on');
+
   /* 받침에 있던 타일을 보드로 되돌린다 */
   const back=tray.slice();
   back.forEach(t=>{ t.where='board'; });
   tray=[]; history=[];
-  /* 시간이 다 됐던 경우라면 시간을 보충 */
+
+  /* 시간이 다 됐던 경우라면 시간을 보충, 아니면 조금 추가 */
   if(timeLeft<=0) timeLeft=Math.max(45,Math.floor(levelTime(level)*0.35));
   else timeLeft+=20;
+
   playing=true; clearing=false;
   drawTray(-1); drawBoard(); updateItems(); tick();
+
   /* 부활 연출 */
   sStage();
   confettiRain(40);
   const r=boardEl.getBoundingClientRect();
   burst(r.left+r.width/2,r.top+r.height/2,null);
-  clearInterval(timerId);
-  timerId=setInterval(()=>{
-    if(!playing) return;
-    timeLeft--; tick();
-    if(timeLeft===10||timeLeft===5||timeLeft===3) tone(880,.1,'square',.06);
-    if(timeLeft<=0){
-      if(isBonus) bonusEnd(T('bonusTimeUp')); else lose(T('timeUp'));
-    }
-  },1000);
+
+  startTimer();
 }
 
 /* ══ 튜토리얼 ══
@@ -2213,15 +2212,7 @@ function endTutor(save){
     try{ localStorage.setItem('animaltile.tutor','1'); }catch(e){}
   }
   /* 타이머 재개 */
-  if(playing){
-    clearInterval(timerId);
-    timerId=setInterval(()=>{
-      if(!playing) return;
-      timeLeft--; tick();
-      if(timeLeft===10||timeLeft===5||timeLeft===3) tone(880,.1,'square',.06);
-      if(timeLeft<=0){ if(isBonus) bonusEnd(T('bonusTimeUp')); else lose(T('timeUp')); }
-    },1000);
-  }
+  if(playing) startTimer();
 }
 window.addEventListener('resize',()=>{
   if($('tutor').classList.contains('on')) showTutorStep(tutorStep);
@@ -2463,6 +2454,19 @@ function roundTransition(lv){
 }
 
 /* ══ 진행 ══ */
+/* 타이머를 한 곳에서 관리 — 어디서 재개해도 이 함수 하나만 쓴다 */
+function startTimer(){
+  clearInterval(timerId);
+  if(!playing) return;
+  timerId=setInterval(()=>{
+    if(!playing) return;
+    timeLeft--; tick();
+    if(timeLeft===10||timeLeft===5||timeLeft===3) tone(880,.1,'square',.06);
+    if(timeLeft<=0){
+      if(isBonus) bonusEnd(T('bonusTimeUp')); else lose(T('timeUp'));
+    }
+  },1000);
+}
 function startLevel(lv,skipTransition){
   level=lv;
   isBonus=isBonusLevel(lv);
@@ -2490,16 +2494,7 @@ function startLevel(lv,skipTransition){
   $('hudLevel').textContent=isBonus?'★':lv;
   $('hudScore').textContent=score;
   drawBoard(); drawTray(-1); updateItems(); tick();
-  clearInterval(timerId);
-  timerId=setInterval(()=>{
-    if(!playing) return;
-    timeLeft--; tick();
-    if(timeLeft===10||timeLeft===5||timeLeft===3) tone(880,.1,'square',.06);
-    if(timeLeft<=0){
-      if(isBonus) bonusEnd(T('bonusTimeUp'));
-      else lose(T('timeUp'));
-    }
-  },1000);
+  startTimer();
   /* 첫 실행이면 튜토리얼 */
   if(lv===1 && !tutorDone) setTimeout(startTutor,420);
 }
@@ -2691,14 +2686,20 @@ function win(){
   },1300);
 }
 function lose(reason){
-  playing=false; clearInterval(timerId);
+  playing=false;
+  clearInterval(timerId);
+  clearInterval(reviveTimer);
   BGM.duck(2000);
   $('comboWrap').classList.remove('on');
 
-  /* 부활 기회를 먼저 제안한다 — 판당 최대 2회, 보너스 판은 제외 */
-  if(!isBonus && revivesUsed<2 && coins>=reviveCost()){
+  /* 부활 조건:
+     - 보너스 스테이지 제외
+     - 판당 최대 2회 (revivesUsed가 이미 2면 불가)
+     - 코인이 부활 비용 이상일 때만 */
+  const canRevive = !isBonus && revivesUsed < 2 && coins >= reviveCost();
+  if(canRevive){
     sLose();
-    offerRevive(reason,()=>finalLose(reason));
+    offerRevive(reason, ()=>finalLose(reason));
     return;
   }
   finalLose(reason);
